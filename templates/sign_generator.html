@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Language Generator | HandSignify</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Inter:400,600,700'>
+    <link rel="stylesheet" href="{{ url_for('static', filename='modern_style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='sign_generator.css') }}">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('home')}}">HandSignify</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home')}}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('about')}}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('guide')}}">Guide</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('sign_language')}}">Sign Language</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    {% if session.get('logged_in') %}
+                    <li class="nav-item"><a href="{{ url_for('dashboard') }}" class="btn-primary"
+                            style="text-decoration:none;">Dashboard</a></li>
+                    {% else %}
+                    <li class="nav-item me-2"><a href="{{ url_for('login') }}" class="btn-outline"
+                            style="text-decoration:none;">Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="generator-feature">
+        <div class="generator-card">
+            <div class="generator-header">
+                <h2>Sign Language Generator</h2>
+                <p>Convert your text into natural sign language videos using AI.</p>
+            </div>
+
+            <form id="generatorForm">
+                <div class="input-group-custom">
+                    <label for="inputText">Translate to Signs</label>
+                    <textarea id="inputText" class="modern-textarea"
+                        placeholder="Enter text to convert into sign language..." required></textarea>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="input-group-custom mb-0">
+                        <select id="languageSelect" class="modern-select">
+                            <option value="ASL">American Sign Language (ASL)</option>
+                            <option value="ISL">Indian Sign Language (ISL)</option>
+                        </select>
+                    </div>
+                    <button type="submit" id="generateBtn" class="btn-generate">
+                        <span>Generate Video</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Loading State -->
+            <div id="loadingOverlay" class="loading-overlay hidden">
+                <div class="pulse-loader"></div>
+                <p class="text-muted">AI is processing your request...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorMessage" class="alert alert-danger mt-4 hidden"></div>
+
+            <!-- Video Output -->
+            <div id="resultsContainer" class="video-container-premium hidden">
+                <video id="signVideo" class="sign-video" controls>
+                    <source id="videoSource" src="" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <div class="p-3 bg-white border-top d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">Generated by Enterprise SignAI</span>
+                    <div class="video-actions mt-0">
+                        <a id="downloadBtn" href="#" download class="btn-action">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Download
+                        </a>
+                        <button id="replayBtn" class="btn-action">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 4 23 10 17 10"></polyline>
+                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                            </svg>
+                            Replay
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-4 text-muted border-top mt-5">
+        <p>&copy; 2026 HandSignify. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('generatorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const text = document.getElementById('inputText').value;
+            const language = document.getElementById('languageSelect').value;
+            const generateBtn = document.getElementById('generateBtn');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const errorMessage = document.getElementById('errorMessage');
+            const video = document.getElementById('signVideo');
+            const source = document.getElementById('videoSource');
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            // Reset UI
+            errorMessage.classList.add('hidden');
+            resultsContainer.classList.add('hidden');
+            loadingOverlay.classList.remove('hidden');
+            generateBtn.disabled = true;
+
+            try {
+                const response = await fetch('/generate_sign_video_api', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, language })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const cacheBuster = `?t=${Date.now()}`;
+                    source.src = data.video_url + cacheBuster;
+                    video.load();
+                    video.play(); // Auto-play when ready
+                    downloadBtn.href = data.video_url;
+                    resultsContainer.classList.remove('hidden');
+
+                    // Smooth scroll to results
+                    resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else {
+                    errorMessage.textContent = data.error || 'Failed to generate video. Please try again.';
+                    errorMessage.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorMessage.textContent = 'A network error occurred. Please check your connection.';
+                errorMessage.classList.remove('hidden');
+            } finally {
+                loadingOverlay.classList.add('hidden');
+                generateBtn.disabled = false;
+            }
+        });
+
+        document.getElementById('replayBtn').addEventListener('click', () => {
+            const video = document.getElementById('signVideo');
+            video.currentTime = 0;
+            video.play();
+        });
+    </script>
+</body>
+
+</html>

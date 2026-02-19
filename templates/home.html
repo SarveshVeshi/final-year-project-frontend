@@ -3,97 +3,112 @@
 {% block title %}HandSignify | AI Sign Language Detection{% endblock %}
 
 {% block content %}
-<!-- Full Screen Background Video -->
-<div class="video-container">
-    <video autoplay muted loop playsinline id="bgVideo" onerror="this.style.display='none'">
-        {% if video_data %}
-        <source src="{{ video_data.url }}?v={{ video_data.timestamp }}" type="video/mp4">
-        {% else %}
-        <!-- Fallback if no video found by backend -->
-        <source src="{{ url_for('static', filename='videos/background.mp4') }}" type="video/mp4">
-        {% endif %}
-        Your browser does not support HTML5 video.
-    </video>
-    <div class="video-overlay"></div>
-</div>
-
-<!-- Hero Section -->
-<div class="hero-content-wrapper" style="position: relative; z-index: 2;">
-    <!-- Animated Background Gradient (Optional/Fallback) -->
-    <div class="floating-blobs-container"></div>
-
-    <header class="main-container hero-content"
-        style="flex-direction: column; padding: 4rem 2rem; position: relative; z-index: 2;">
-        <div class="glass-hero" style="max-width: 700px;">
-            <h1 style="font-size: 3rem; margin-bottom: 1rem; color: var(--text-main);">Breaking Barriers with AI</h1>
-            <p style="font-size: 1.25rem; color: var(--text-muted); margin-bottom: 2.5rem;">
-                Real-time Sign Language Detection powered by advanced computer vision.
-                Bridge the communication gap instantly.
+<!-- Hero (no video) -->
+<section class="hs-hero" data-animate="section">
+    <div class="hs-hero-grid">
+        <div class="hs-hero-copy">
+            <p class="hs-eyebrow">AI sign language studio</p>
+            <h1 class="hs-hero-title">Bring sign language into every conversation.</h1>
+            <p class="hs-hero-subtitle">
+                HandSignify uses real-time computer vision and ML to translate ASL gestures into text, speech, and
+                interactive visuals — all in your browser.
             </p>
-
-            <div class="d-flex gap-3 justify-content-center">
+            <div class="hs-hero-cta">
                 <a href="{{ url_for('sign_text_converter') }}" class="btn-primary">Try Sign Converter</a>
-                <a href="{{ url_for('voice_converter') }}" class="btn-outline">Try Voice Converter</a>
+                <a href="{{ url_for('voice_converter') }}" class="btn-outline">Explore Voice &amp; Signs</a>
+                <span class="hs-hero-meta">No installs. Works with your existing webcam.</span>
             </div>
         </div>
-    </header>
-</div>
+        <div class="hs-hero-visual">
+            <div class="hs-hero-panel hs-hero-panel--primary">
+                <h3>Realtime recognition</h3>
+                <p>Camera frames stream into a MediaPipe + Random Forest pipeline, returning stable predictions in
+                    under a second.</p>
+                <ul class="mb-0">
+                    <li>ASL alphabet &amp; phrases</li>
+                    <li>Stability window for noise reduction</li>
+                    <li>Built for live demos &amp; classrooms</li>
+                </ul>
+            </div>
+            <div class="hs-hero-panel hs-hero-panel--secondary">
+                <h3>One project, three modes</h3>
+                <p class="mb-2">Sign → Text, Text → Signs, Voice ↔ Signs — all powered by the same backend.</p>
+                <ul class="mb-0">
+                    <li>Camera dashboard for live signs</li>
+                    <li>Converters for practice &amp; teaching</li>
+                    <li>Socket-based streaming UX</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
 
 <!-- Features Section -->
-<section class="container py-5">
-    <h2 class="text-center mb-5" style="color: var(--text-main); font-size: 2.5rem;">Our Features</h2>
-    <div class="row g-4">
-        <!-- Sign → Text Feature -->
-        <div class="col-md-6">
-            <div class="card h-100 p-4">
-                <h3 class="d-flex align-items-center mb-3" style="color: var(--primary);">
-                    <i data-lucide="monitor"
-                        style="width: 32px; height: 32px; vertical-align: middle; margin-right: 0.5rem;"></i>
-                    Sign → Text
-                </h3>
-                <p style="color: var(--text-muted);">Real-time camera-based sign language recognition converting hand
-                    gestures into readable text using advanced ML models.</p>
+<section class="hs-section hs-features" data-animate="section">
+    <div class="hs-features-header">
+        <p class="hs-eyebrow">Capabilities</p>
+        <h2>Everything you need to prototype sign-aware experiences.</h2>
+        <p class="hs-hero-subtitle">Use HandSignify as a playground for assistive interfaces, teaching tools, or
+            research experiments.</p>
+    </div>
+    <div class="hs-features-grid">
+        <article class="hs-feature-card">
+            <div class="hs-feature-icon">
+                <i data-lucide="monitor"></i>
             </div>
-        </div>
+            <h3>Sign → Text</h3>
+            <p>Stream webcam input into a hand-landmark model and get stable text output suitable for chat, captions,
+                or logs.</p>
+        </article>
+        <article class="hs-feature-card">
+            <div class="hs-feature-icon">
+                <i data-lucide="type"></i>
+            </div>
+            <h3>Text → Signs</h3>
+            <p>Turn any phrase into a sequence of ASL letter cards, perfect for learning flows and interactive explainers.</p>
+        </article>
+        <article class="hs-feature-card">
+            <div class="hs-feature-icon">
+                <i data-lucide="mic"></i>
+            </div>
+            <h3>Voice → Signs</h3>
+            <p>Use browser speech recognition to convert spoken language into sign sequences in real time.</p>
+        </article>
+        <article class="hs-feature-card">
+            <div class="hs-feature-icon">
+                <i data-lucide="volume-2"></i>
+            </div>
+            <h3>Signs → Voice</h3>
+            <p>Take detected signs, accumulate text, and play them back using speech synthesis for accessible dialogs.</p>
+        </article>
+    </div>
+</section>
 
-        <!-- Text → Sign Feature -->
-        <div class="col-md-6">
-            <div class="card h-100 p-4">
-                <h3 class="d-flex align-items-center mb-3" style="color: var(--primary);">
-                    <i data-lucide="message-square"
-                        style="width: 32px; height: 32px; vertical-align: middle; margin-right: 0.5rem;"></i>
-                    Text → Sign
-                </h3>
-                <p style="color: var(--text-muted);">Convert any text into sign language alphabet images for learning
-                    and communication assistance.</p>
-            </div>
-        </div>
+<!-- How it works -->
+<section class="hs-section hs-how" data-animate="section">
+    <p class="hs-eyebrow text-center">Flow</p>
+    <h2 class="text-center mb-3">From camera frame to meaningful output.</h2>
+    <p class="hs-hero-subtitle text-center mx-auto" style="max-width: 640px;">
+        Under the hood, HandSignify is a thin, inspectable stack: Flask, Socket.IO, MediaPipe, and a Random Forest
+        classifier — wired for clarity.
+    </p>
 
-        <!-- Voice → Sign Feature -->
-        <div class="col-md-6">
-            <div class="card h-100 p-4">
-                <h3 class="d-flex align-items-center mb-3" style="color: var(--primary);">
-                    <i data-lucide="mic"
-                        style="width: 32px; height: 32px; vertical-align: middle; margin-right: 0.5rem;"></i>
-                    Voice → Sign
-                </h3>
-                <p style="color: var(--text-muted);">Speak naturally and see your words instantly converted into sign
-                    language alphabet images using speech recognition.</p>
-            </div>
-        </div>
-
-        <!-- Sign → Voice Feature -->
-        <div class="col-md-6">
-            <div class="card h-100 p-4">
-                <h3 class="d-flex align-items-center mb-3" style="color: var(--primary);">
-                    <i data-lucide="volume-2"
-                        style="width: 32px; height: 32px; vertical-align: middle; margin-right: 0.5rem;"></i>
-                    Sign → Voice
-                </h3>
-                <p style="color: var(--text-muted);">Use camera-detected signs and hear them spoken aloud using browser
-                    speech synthesis technology.</p>
-            </div>
-        </div>
+    <div class="hs-steps-grid">
+        <article class="hs-step-card">
+            <div class="hs-step-index">1</div>
+            <h3>Capture</h3>
+            <p>Frames are streamed from the browser to the backend endpoint powering the dashboard and converters.</p>
+        </article>
+        <article class="hs-step-card">
+            <div class="hs-step-index">2</div>
+            <h3>Interpret</h3>
+            <p>MediaPipe extracts 21-point hand landmarks which are normalized and fed into a trained Random Forest model.</p>
+        </article>
+        <article class="hs-step-card">
+            <div class="hs-step-index">3</div>
+            <h3>Deliver</h3>
+            <p>Predictions stream back over WebSocket and update the UI — as text, signs, or speech — without reloading the page.</p>
+        </article>
     </div>
 </section>
 {% endblock %}

@@ -53,6 +53,28 @@ HandSignify provides:
 
 ---
 
+## Design System
+
+The UI is built on a small, token-based design system defined in `static/css/advanced-theme.css`:
+
+- **Color scale**
+  - `--hs-color-bg`, `--hs-color-bg-soft`, `--hs-color-surface`, `--hs-color-text-main`, `--hs-color-text-soft`
+  - `--hs-color-primary`, `--hs-color-primary-soft`, `--hs-color-primary-strong`, `--hs-color-accent`
+- **Spacing scale**
+  - `--hs-space-1` … `--hs-space-7` for consistent padding/margins
+- **Radius scale**
+  - `--hs-radius-sm`, `--hs-radius-md`, `--hs-radius-lg`, `--hs-radius-pill`
+- **Shadow system**
+  - `--hs-shadow-soft`, `--hs-shadow-medium`, `--hs-shadow-floating`
+- **Motion**
+  - `--hs-ease-standard`, `--hs-duration-fast`, `--hs-duration-med`, `--hs-duration-slow`
+
+Components like the hero, feature cards, and camera frame are all composed using these tokens instead of ad‑hoc values.
+
+Screenshots and UI details can be added under `static/ui/` (e.g. `static/ui/home.png`) and referenced from this README when available.
+
+---
+
 ## Architecture Overview
 
 ```

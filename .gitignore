@@ -153,8 +153,29 @@ cython_debug/
 .vscode/
 
 # Project Specific
+data/
 data/processed/
 node_modules/
 dist/
 *.log
 install_log.txt
+
+# Large binaries (do not commit)
+*.mp4
+*.webm
+*.pkl
+*.pickle
+*.p
+*.joblib
+models/model.p
+models/data.pickle
+
+# Instance and runtime
+instance/
+.server.pid
+
+# Documentation artifacts (optional - uncomment if excluding)
+# *.pdf
+
+# Backup files
+*.bak

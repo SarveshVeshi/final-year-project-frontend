@@ -48,13 +48,15 @@ def start_server():
     with open(PID_FILE, "w") as f:
         f.write(str(process.pid))
 
-    # Wait a bit to ensure it started
-    time.sleep(5)
+    # Wait for server to start (MediaPipe/TensorFlow take ~10-15 seconds to load)
+    print("Waiting for server to initialize (this may take 10-15 seconds)...")
+    time.sleep(15)
     if is_port_in_use(PORT):
         print("Server started successfully.")
         print(f"Access it at http://{HOST}:{PORT}")
     else:
         print("FAILED: Server did not start correctly.")
+        print("Try running 'python app.py' directly to see error messages.")
 
 def stop_server():
     if not is_port_in_use(PORT):

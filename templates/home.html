@@ -1,106 +1,99 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HandSignify | AI Sign Language Detection</title>
+{% block title %}HandSignify | AI Sign Language Detection{% endblock %}
 
-    <!-- Bootstrap for Navbar -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block content %}
+<!-- Full Screen Background Video -->
+<div class="video-container">
+    <video autoplay muted loop playsinline id="bgVideo" onerror="this.style.display='none'">
+        {% if video_data %}
+        <source src="{{ video_data.url }}?v={{ video_data.timestamp }}" type="video/mp4">
+        {% else %}
+        <!-- Fallback if no video found by backend -->
+        <source src="{{ url_for('static', filename='videos/background.mp4') }}" type="video/mp4">
+        {% endif %}
+        Your browser does not support HTML5 video.
+    </video>
+    <div class="video-overlay"></div>
+</div>
 
-    <!-- Modern Typography & Custom Styles -->
-    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Inter:400,600,700'>
-    <link rel="stylesheet" href="{{ url_for('static', filename='modern_style.css') }}">
-</head>
+<!-- Hero Section -->
+<div class="hero-content-wrapper" style="position: relative; z-index: 2;">
+    <!-- Animated Background Gradient (Optional/Fallback) -->
+    <div class="floating-blobs-container"></div>
 
-<body>
+    <header class="main-container hero-content"
+        style="flex-direction: column; padding: 4rem 2rem; position: relative; z-index: 2;">
+        <div class="glass-hero" style="max-width: 700px;">
+            <h1 style="font-size: 3rem; margin-bottom: 1rem; color: var(--text-main);">Breaking Barriers with AI</h1>
+            <p style="font-size: 1.25rem; color: var(--text-muted); margin-bottom: 2.5rem;">
+                Real-time Sign Language Detection powered by advanced computer vision.
+                Bridge the communication gap instantly.
+            </p>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('home')}}">HandSignify</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('home')}}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('about')}}">About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('guide')}}">Guide</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('sign_language')}}">Sign Language</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav ms-auto">
-                    {% if session.get('logged_in') %}
-                    <li class="nav-item"><a href="{{ url_for('dashboard') }}" class="btn-primary"
-                            style="text-decoration:none;">Go to Dashboard</a></li>
-                    {% else %}
-                    <li class="nav-item me-2"><a href="{{ url_for('login') }}" class="btn-outline"
-                            style="text-decoration:none;">Login</a></li>
-                    <li class="nav-item"><a href="{{ url_for('register') }}" class="btn-primary"
-                            style="text-decoration:none;">Sign Up</a></li>
-                    {% endif %}
-                </ul>
+            <div class="d-flex gap-3 justify-content-center">
+                <a href="{{ url_for('sign_text_converter') }}" class="btn-primary">Try Sign Converter</a>
+                <a href="{{ url_for('voice_converter') }}" class="btn-outline">Try Voice Converter</a>
             </div>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <header class="main-container text-center"
-        style="flex-direction: column; padding: 4rem 2rem; background: var(--bg-color);">
-        <h1 style="font-size: 3rem; margin-bottom: 1rem; color: var(--text-main);">Breaking Barriers with AI</h1>
-        <p style="font-size: 1.25rem; color: var(--text-muted); max-width: 600px; margin-bottom: 2.5rem;">
-            Real-time Sign Language Detection powered by advanced computer vision.
-            Bridge the communication gap instantly.
-        </p>
-
-        <div class="d-flex gap-3 justify-content-center">
-            <a href="{{ url_for('dashboard') }}" class="btn-primary">Try It Now</a>
-            <a href="{{ url_for('guide') }}" class="btn-outline">How it Works</a>
         </div>
     </header>
+</div>
 
-    <!-- Features Section -->
-    <section class="container py-5">
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="auth-card h-100 text-center">
-                    <h3 class="mt-2">Real-Time</h3>
-                    <p class="text-muted">Instant translation of hand gestures to text using MediaPipe technology.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="auth-card h-100 text-center">
-                    <h3 class="mt-2">Accessible</h3>
-                    <p class="text-muted">Designed with clarity and usability in mind for everyone.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="auth-card h-100 text-center">
-                    <h3 class="mt-2">Secure</h3>
-                    <p class="text-muted">Your data is private. Authentication ensures secure access to your history.
-                    </p>
-                </div>
+<!-- Features Section -->
+<section class="container py-5">
+    <h2 class="text-center mb-5" style="color: var(--text-main); font-size: 2.5rem;">Our Features</h2>
+    <div class="row g-4">
+        <!-- Sign → Text Feature -->
+        <div class="col-md-6">
+            <div class="card h-100 p-4">
+                <h3 class="d-flex align-items-center mb-3" style="color: var(--primary);">
+                    <i data-lucide="monitor"
+                        style="width: 32px; height: 32px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                    Sign → Text
+                </h3>
+                <p style="color: var(--text-muted);">Real-time camera-based sign language recognition converting hand
+                    gestures into readable text using advanced ML models.</p>
             </div>
         </div>
-    </section>
 
-    <!-- Footer -->
-    <footer class="text-center py-4 text-muted border-top">
-        <p>&copy; 2026 HandSignify. All rights reserved.</p>
-    </footer>
+        <!-- Text → Sign Feature -->
+        <div class="col-md-6">
+            <div class="card h-100 p-4">
+                <h3 class="d-flex align-items-center mb-3" style="color: var(--primary);">
+                    <i data-lucide="message-square"
+                        style="width: 32px; height: 32px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                    Text → Sign
+                </h3>
+                <p style="color: var(--text-muted);">Convert any text into sign language alphabet images for learning
+                    and communication assistance.</p>
+            </div>
+        </div>
 
-</body>
+        <!-- Voice → Sign Feature -->
+        <div class="col-md-6">
+            <div class="card h-100 p-4">
+                <h3 class="d-flex align-items-center mb-3" style="color: var(--primary);">
+                    <i data-lucide="mic"
+                        style="width: 32px; height: 32px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                    Voice → Sign
+                </h3>
+                <p style="color: var(--text-muted);">Speak naturally and see your words instantly converted into sign
+                    language alphabet images using speech recognition.</p>
+            </div>
+        </div>
 
-</html>
+        <!-- Sign → Voice Feature -->
+        <div class="col-md-6">
+            <div class="card h-100 p-4">
+                <h3 class="d-flex align-items-center mb-3" style="color: var(--primary);">
+                    <i data-lucide="volume-2"
+                        style="width: 32px; height: 32px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                    Sign → Voice
+                </h3>
+                <p style="color: var(--text-muted);">Use camera-detected signs and hear them spoken aloud using browser
+                    speech synthesis technology.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

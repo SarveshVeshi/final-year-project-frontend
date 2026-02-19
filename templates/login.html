@@ -1,104 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In | HandSignify</title>
+{% block title %}Sign In | HandSignify{% endblock %}
 
-    <!-- Bootstrap for Navbar -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block content %}
+<main class="auth-container">
+    <div class="auth-card">
+        <h1 class="text-center mb-4">Welcome Back</h1>
 
-    <!-- Modern Typography & Custom Styles -->
-    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Inter:400,600,700'>
-    <link rel="stylesheet" href="{{ url_for('static', filename='modern_style.css') }}">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
 
-    <script type="text/javascript">
-        function hideFlashMessage() {
-            var flashMessage = document.getElementById('flash-message');
-            if (flashMessage) {
-                setTimeout(function () {
-                    flashMessage.style.display = 'none';
-                }, 3000);
-            }
-        }
-    </script>
-</head>
-
-<body onload="hideFlashMessage()">
-
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('home')}}">HandSignify</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('home')}}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('about')}}">About</a>
-                    </li>
-                </ul>
+            <div class="mb-3">
+                <label for="username" style="color: var(--text-muted); margin-bottom: 0.5rem;">Username</label>
+                {{ form.username(class="form-control", placeholder="Enter your username", style="background: rgba(0, 0,
+                0, 0.3); border: 1px solid var(--glass-border); color: #fff;") }}
             </div>
+
+            <div class="mb-3">
+                <label for="email" style="color: var(--text-muted); margin-bottom: 0.5rem;">Email Address</label>
+                {{ form.email(class="form-control", placeholder="name@example.com", style="background: rgba(0, 0, 0,
+                0.3); border: 1px solid var(--glass-border); color: #fff;") }}
+            </div>
+
+            <div class="mb-4">
+                <label for="password" style="color: var(--text-muted); margin-bottom: 0.5rem;">Password</label>
+                {{ form.password(class="form-control", placeholder="Enter your password", style="background: rgba(0, 0,
+                0, 0.3); border: 1px solid var(--glass-border); color: #fff;") }}
+            </div>
+
+            <div class="d-grid">
+                {{ form.submit(class="btn-primary", style="width: 100%;") }}
+            </div>
+        </form>
+
+        <div class="divider">
+            <span>OR</span>
         </div>
-    </nav>
 
-    <!-- Flash Messages (Centered) -->
-    <div class="container mt-3" style="max-width: 600px;">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for category,message in messages %}
-        <div id="flash-message" class="alert alert-{{category}}">{{message}}</div>
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
-    </div>
-
-    <!-- Main Content: Centered Auth Card -->
-    <div class="main-container">
-        <div class="auth-card">
-            <h1 class="text-center mb-4">Welcome Back</h1>
-
-            <form method="POST" action="">
-                {{ form.hidden_tag()}}
-
-                <div class="mb-3">
-                    <label for="username">Username</label>
-                    {{ form.username(class="form-control", placeholder="Enter your username")}}
-                </div>
-
-                <div class="mb-3">
-                    <label for="email">Email Address</label>
-                    {{ form.email(class="form-control", placeholder="name@example.com")}}
-                </div>
-
-                <div class="mb-4">
-                    <label for="password">Password</label>
-                    {{ form.password(class="form-control", placeholder="Enter your password")}}
-                </div>
-
-                {{ form.submit(class="btn-primary")}}
-            </form>
-
-            <div class="divider">
-                <span>OR</span>
-            </div>
-
-            <div class="auth-links">
-                <a href="{{ url_for('register') }}" class="btn-outline d-block mb-2 text-center"
-                    style="padding: 0.5rem; border-radius: 0.5rem; text-decoration: none;">Create Account</a>
-                <a href="{{ url_for('reset_password_request') }}">Forgot Password?</a>
-            </div>
+        <div class="auth-links text-center">
+            <a href="{{ url_for('register') }}" class="btn-outline d-block mb-2 text-center"
+                style="padding: 0.5rem; border-radius: 0.5rem; text-decoration: none; width: 100%;">Create Account</a>
+            <a href="{{ url_for('reset_password_request') }}"
+                style="font-size: 0.9rem; color: var(--text-muted);">Forgot Password?</a>
         </div>
     </div>
-
-</body>
-
-</html>
+</main>
+{% endblock %}

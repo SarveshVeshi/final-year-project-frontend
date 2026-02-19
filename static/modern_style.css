@@ -1,5 +1,16 @@
 /* modern_style.css */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('video_styles.css');
+
+/* ... (rest of file) */
+/* Centering Fix for Buttons */
+.btn-primary,
+.btn-outline {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
 
 :root {
     --bg-color: #f8f9fa;

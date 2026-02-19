@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Sign-Text & Text-Sign Converter | HandSignify{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='sign_generator.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="generator-feature">
+    <div class="generator-card">
+        <div class="generator-header">
+            <h2>Sign-Text & Text-Sign Converter</h2>
+            <p>Convert between sign language and text in both directions.</p>
+        </div>
+
+        <!-- Feature Toggle Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-button active" data-tab="signToTextPanel">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+                Sign → Text
+            </button>
+            <button class="tab-button" data-tab="textToSignPanel">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Text → Sign
+            </button>
+        </div>
+
+        <!-- Sign → Text Panel (Camera-based recognition) -->
+        <div id="signToTextPanel" class="tab-content active">
+            <div class="feature-panel">
+                <h3>Sign → Text: Real-Time Recognition</h3>
+                <p class="text-muted mb-4">Use your camera to detect sign language gestures and convert them to
+                    text.</p>
+
+                <div class="controls mb-3">
+                    <button id="startCameraButton" class="btn-primary">Start Camera</button>
+                    <button id="closeCameraButton" class="btn-danger-custom hidden">Stop Camera</button>
+                </div>
+
+                <!-- Camera Feed Container -->
+                <div id="cameraFeedContainer" class="camera-feed-box hidden">
+                    <img id="cameraFeed" src="" alt="Camera Stream">
+                </div>
+
+                <div class="info-box mt-4">
+                    <p class="mb-0"><strong>Tip:</strong> Ensure good lighting and position your hand clearly in the
+                        camera frame for best results.</p>
+                </div>
+
+                <!-- Recognized Text Display -->
+                <div class="mt-4">
+                    <label class="form-label">Recognized Text:</label>
+                    <div id="recognizedText" class="p-3 bg-light border rounded" style="min-height: 60px; font-size: 1.2rem;">
+                        <span class="text-muted">Waiting for sign language input...</span>
+                    </div>
+                    <div class="mt-2 text-end">
+                        <button id="clearTextBtn" class="btn btn-sm btn-outline-secondary">Clear Text</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Text → Sign Panel (Image-based rendering) -->
+        <div id="textToSignPanel" class="tab-content">
+            <div class="feature-panel">
+                <h3>Text → Sign: Instant Translation</h3>
+                <p class="text-muted mb-4">Enter text to see the corresponding sign language alphabet images.</p>
+
+                <form id="generatorForm">
+                    <div class="input-group-custom">
+                        <label for="inputText">Enter Your Text</label>
+                        <textarea id="inputText" class="modern-textarea"
+                            placeholder="Enter text to convert into sign language..." required></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="input-group-custom mb-0">
+                            <select id="languageSelect" class="modern-select">
+                                <option value="ASL">American Sign Language (ASL)</option>
+                                <option value="ISL">Indian Sign Language (ISL)</option>
+                            </select>
+                        </div>
+                        <button type="submit" id="generateBtn" class="btn-generate">
+                            <span>Show Signs</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Error State -->
+                <div id="errorMessage" class="alert alert-danger mt-4 hidden"></div>
+
+                <!-- Sign Output Container -->
+                <div id="signOutput" class="sign-output-container hidden"></div>
+            </div>
+        </div>
+
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script src="{{ url_for('static', filename='camera-controller.js') }}"></script>
+<script src="{{ url_for('static', filename='feature-utils.js') }}"></script>
+<script src="{{ url_for('static', filename='realtime-interaction.js') }}"></script>
+
+<script>
+    // Initialize Camera Controller for Sign → Text panel
+    let cameraController = null;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize camera controller
+        cameraController = initCameraController({
+            startButtonId: 'startCameraButton',
+            stopButtonId: 'closeCameraButton',
+            feedElementId: 'cameraFeed',
+            containerId: 'cameraFeedContainer',
+            videoFeedUrl: "{{ url_for('video_feed') }}"
+        });
+
+        // Initialize Real-Time Interaction (WebSocket & Speech)
+        const recognizedTextDisplay = document.getElementById('recognizedText');
+        const clearTextBtn = document.getElementById('clearTextBtn');
+
+        if (typeof initWebSocket === 'function') {
+            initWebSocket({
+                onStablePrediction: (char, fullText) => {
+                    // Update display
+                    recognizedTextDisplay.innerText = fullText;
+                    recognizedTextDisplay.classList.remove('text-muted');
+                },
+                onError: (err) => {
+                    console.error("Realtime Interaction Error:", err);
+                }
+            });
+        }
+
+        // Clear text button handler
+        if (clearTextBtn) {
+            clearTextBtn.addEventListener('click', () => {
+                if (typeof clearAccumulatedText === 'function') {
+                    clearAccumulatedText();
+                }
+                recognizedTextDisplay.innerHTML = '<span class="text-muted">Waiting for sign language input...</span>';
+            });
+        }
+
+        // Setup tab switching for sign/text toggle
+        setupFeatureToggle('.tab-button', '.tab-content', {
+            onSwitch: (targetPanel) => {
+                // Stop camera if switching to Text → Sign
+                if (targetPanel === 'textToSignPanel' && cameraController) {
+                    cameraController.stopCamera();
+                }
+            }
+        });
+
+        // Setup Text → Sign form submission
+        const form = document.getElementById('generatorForm');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const inputText = document.getElementById('inputText').value.trim();
+
+            if (!inputText) {
+                showError('errorMessage', 'Please enter some text');
+                return;
+            }
+
+            // Clear previous error
+            document.getElementById('errorMessage').classList.add('hidden');
+
+            // Call conversion function from feature-utils.js
+            convertTextToSign(inputText, 'signOutput');
+        });
+    });
+</script>
+{% endblock %}

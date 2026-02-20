@@ -1,130 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="HandSignify — AI-powered real-time ASL sign language detection and translation.">
     <title>{% block title %}HandSignify | AI Sign Language Detection{% endblock %}</title>
 
-    <!-- Common Stylesheets -->
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Inter:400,600,700'>
+
+    <!-- Design System -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/advanced-theme.css') }}">
 
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest" defer></script>
 
-    <!-- GSAP Animation Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-
-    <!-- Page-specific styles -->
     {% block extra_css %}{% endblock %}
 </head>
 
 <body class="hs-body">
-    <!-- Background Layers -->
-    <div class="hs-noise-layer"></div>
-    <div class="hs-orb hs-orb--blue"></div>
-    <div class="hs-orb hs-orb--amber"></div>
-    <div class="hs-orb hs-orb--purple"></div>
+    <!-- Background layers -->
+    <div class="hs-noise-layer" aria-hidden="true"></div>
+    <div class="hs-orb hs-orb--blue"   aria-hidden="true"></div>
+    <div class="hs-orb hs-orb--amber"  aria-hidden="true"></div>
+    <div class="hs-orb hs-orb--purple" aria-hidden="true"></div>
 
-    <div class="app-shell">
-    <!-- Centralized Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('home')}}">HandSignify</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'home' %}active{% endif %}"
-                            href="{{ url_for('home')}}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'about' %}active{% endif %}"
-                            href="{{ url_for('about')}}">About Us</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'sign_text_converter' %}active{% endif %}"
-                            href="{{ url_for('sign_text_converter')}}">Sign-Text & Text-Sign</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'voice_converter' %}active{% endif %}"
-                            href="{{ url_for('voice_converter')}}">Voice-Sign & Sign-Voice</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav ms-auto">
-                    {% if session.get('logged_in') %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            {{session.get('name', 'User')}}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="{{ url_for('reset_email') }}">Reset Email</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('update_password') }}">Reset Password</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item text-danger" href="{{url_for('logout')}}">Logout</a></li>
-                        </ul>
-                    </li>
-                    {% else %}
-                    <li class="nav-item me-2"><a href="{{ url_for('login') }}" class="btn-outline"
-                            style="text-decoration:none;">Login</a></li>
-                    {% endif %}
-                </ul>
+    <!-- Cursor glow (desktop only) -->
+    <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+    <div class="app-shell page-fade-in">
+
+        <!-- ── Navbar ─────────────────────────────────────────── -->
+        <nav class="navbar navbar-expand-lg" role="navigation" aria-label="Main navigation">
+            <div class="container-fluid px-0">
+                <a class="navbar-brand" href="{{ url_for('home') }}" aria-label="HandSignify home">HandSignify</a>
+
+                <button class="navbar-toggler border-0 shadow-none" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#mainNav"
+                        aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'home' %}active{% endif %}"
+                               href="{{ url_for('home') }}" aria-current="{% if request.endpoint == 'home' %}page{% endif %}">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'about' %}active{% endif %}"
+                               href="{{ url_for('about') }}">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'sign_text_converter' %}active{% endif %}"
+                               href="{{ url_for('sign_text_converter') }}">Sign-Text Converter</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'voice_converter' %}active{% endif %}"
+                               href="{{ url_for('voice_converter') }}">Voice &amp; Signs</a>
+                        </li>
+                    </ul>
+
+                    <ul class="navbar-nav ms-auto align-items-center gap-2">
+                        {% if session.get('logged_in') %}
+                        <li class="nav-item dropdown">
+                            <button class="nav-link dropdown-toggle border-0 bg-transparent d-flex align-items-center gap-2"
+                                    id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--hs-primary),var(--hs-indigo));display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:0.75rem;font-weight:700;">
+                                    {{ session.get('name','U')[0].upper() }}
+                                </span>
+                                {{ session.get('name', 'User') }}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                                <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('reset_email') }}">Change Email</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('update_password') }}">Change Password</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">Logout</a></li>
+                            </ul>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a href="{{ url_for('login') }}" class="btn-outline" style="font-size:0.875rem;">Sign In</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('register') }}" class="btn-primary" style="font-size:0.875rem;">Get Started</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
             </div>
+        </nav>
+
+        <!-- ── Flash Messages ──────────────────────────────────── -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="container-fluid px-0 mb-3" role="alert" aria-live="polite">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Dismiss"></button>
+            </div>
+            {% endfor %}
         </div>
-    </nav>
+        {% endif %}
+        {% endwith %}
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <div class="container mt-3" data-animate="section">
-        {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-    {% endwith %}
+        <!-- ── Page Content ────────────────────────────────────── -->
+        <main>
+            {% block content %}{% endblock %}
+        </main>
 
-    <!-- Page Content -->
-    {% block content %}{% endblock %}
+        <!-- ── Footer ─────────────────────────────────────────── -->
+        <footer class="text-center mt-auto">
+            <small>&copy; 2026 HandSignify — Built with ❤️ for accessibility.</small>
+        </footer>
 
-    <!-- Footer -->
-    <footer class="text-center py-4 text-muted border-top mt-5">
-        <p>&copy; 2026 HandSignify. All rights reserved.</p>
-    </footer>
+    </div><!-- /.app-shell -->
 
-    </div>
-
-    <!-- Common Scripts -->
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Initialize Lucide Icons -->
+    <!-- Init Lucide -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         });
     </script>
 
     <!-- Premium Animations -->
     <script src="{{ url_for('static', filename='premium-animations.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/animations.js') }}"></script>
 
-    <!-- Page-specific scripts -->
     {% block extra_js %}{% endblock %}
 </body>
-
 </html>

@@ -3,46 +3,70 @@
 {% block title %}Sign In | HandSignify{% endblock %}
 
 {% block content %}
-<main class="auth-container">
+<main class="auth-container" data-animate="section">
     <div class="auth-card">
-        <h1 class="text-center mb-4">Welcome Back</h1>
 
-        <form method="POST" action="">
+        <div style="text-align:center;margin-bottom:1.75rem;">
+            <div
+                style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,var(--hs-primary),var(--hs-indigo));display:inline-flex;align-items:center;justify-content:center;margin-bottom:1rem;box-shadow:0 8px 24px var(--hs-primary-glow);">
+                <i data-lucide="hand-metal" style="width:26px;height:26px;color:#fff;"></i>
+            </div>
+            <h1 style="font-size:1.65rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:0.25rem;">Welcome back
+            </h1>
+            <p style="color:var(--hs-text-soft);font-size:0.9rem;margin:0;">Sign in to your HandSignify account</p>
+        </div>
+
+        <form method="POST" action="" novalidate>
             {{ form.hidden_tag() }}
 
             <div class="mb-3">
-                <label for="username" style="color: var(--text-muted); margin-bottom: 0.5rem;">Username</label>
-                {{ form.username(class="form-control", placeholder="Enter your username", style="background: rgba(0, 0,
-                0, 0.3); border: 1px solid var(--glass-border); color: #fff;") }}
+                <label for="{{ form.username.id }}" class="form-label"
+                    style="font-size:0.82rem;font-weight:600;color:var(--hs-text-mid);text-transform:uppercase;letter-spacing:0.05em;">
+                    Username
+                </label>
+                {{ form.username(class="form-control", placeholder="Your username", id=form.username.id,
+                autocomplete="username", style="color:var(--hs-text-main)") }}
             </div>
 
             <div class="mb-3">
-                <label for="email" style="color: var(--text-muted); margin-bottom: 0.5rem;">Email Address</label>
-                {{ form.email(class="form-control", placeholder="name@example.com", style="background: rgba(0, 0, 0,
-                0.3); border: 1px solid var(--glass-border); color: #fff;") }}
+                <label for="{{ form.email.id }}" class="form-label"
+                    style="font-size:0.82rem;font-weight:600;color:var(--hs-text-mid);text-transform:uppercase;letter-spacing:0.05em;">
+                    Email Address
+                </label>
+                {{ form.email(class="form-control", placeholder="name@example.com", id=form.email.id,
+                autocomplete="email", style="color:var(--hs-text-main)") }}
             </div>
 
             <div class="mb-4">
-                <label for="password" style="color: var(--text-muted); margin-bottom: 0.5rem;">Password</label>
-                {{ form.password(class="form-control", placeholder="Enter your password", style="background: rgba(0, 0,
-                0, 0.3); border: 1px solid var(--glass-border); color: #fff;") }}
+                <label for="{{ form.password.id }}" class="form-label"
+                    style="font-size:0.82rem;font-weight:600;color:var(--hs-text-mid);text-transform:uppercase;letter-spacing:0.05em;">
+                    Password
+                </label>
+                {{ form.password(class="form-control", placeholder="••••••••", id=form.password.id,
+                autocomplete="current-password", style="color:var(--hs-text-main)") }}
+                <div style="text-align:right;margin-top:0.4rem;">
+                    <a href="{{ url_for('reset_password_request') }}"
+                        style="font-size:0.8rem;color:var(--hs-text-faint);text-decoration:none;"
+                        onmouseover="this.style.color='var(--hs-primary)'"
+                        onmouseout="this.style.color='var(--hs-text-faint)'">
+                        Forgot password?
+                    </a>
+                </div>
             </div>
 
-            <div class="d-grid">
-                {{ form.submit(class="btn-primary", style="width: 100%;") }}
+            <div class="d-grid mb-3">
+                {{ form.submit(class="btn-primary", style="justify-content:center;") }}
             </div>
         </form>
 
-        <div class="divider">
-            <span>OR</span>
+        <div class="divider"><span>OR</span></div>
+
+        <div class="auth-links">
+            <a href="{{ url_for('register') }}" class="btn-outline" style="text-align:center;">
+                Create a free account
+            </a>
         </div>
 
-        <div class="auth-links text-center">
-            <a href="{{ url_for('register') }}" class="btn-outline d-block mb-2 text-center"
-                style="padding: 0.5rem; border-radius: 0.5rem; text-decoration: none; width: 100%;">Create Account</a>
-            <a href="{{ url_for('reset_password_request') }}"
-                style="font-size: 0.9rem; color: var(--text-muted);">Forgot Password?</a>
-        </div>
     </div>
 </main>
 {% endblock %}

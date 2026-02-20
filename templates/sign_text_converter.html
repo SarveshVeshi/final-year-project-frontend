@@ -4,109 +4,342 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='sign_generator.css') }}">
+<style>
+    /* ── Page-specific overrides ────────────────────────────── */
+    .converter-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .converter-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--hs-primary);
+        background: var(--hs-primary-soft);
+        border: 1px solid rgba(59, 111, 239, 0.2);
+        padding: 0.28rem 0.8rem;
+        border-radius: var(--hs-r-pill);
+        margin-bottom: 0.6rem;
+    }
+
+    .panel-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--hs-text-main);
+        margin-bottom: 0.3rem;
+    }
+
+    .panel-subtitle {
+        font-size: 0.875rem;
+        color: var(--hs-text-soft);
+        margin-bottom: 1.1rem;
+    }
+
+    /* Camera controls */
+    .camera-controls {
+        display: flex;
+        gap: 0.6rem;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    /* Prediction area */
+    .prediction-area {
+        margin-top: 1.25rem;
+    }
+
+    .prediction-label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--hs-text-soft);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Live prediction overlay */
+    .live-prediction-bubble {
+        position: absolute;
+        top: 0.85rem;
+        right: 0.85rem;
+        background: rgba(10, 10, 10, 0.6);
+        backdrop-filter: blur(8px);
+        color: #fff;
+        font-size: 1.2rem;
+        font-weight: 800;
+        min-width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--hs-r-md);
+        letter-spacing: -0.01em;
+        pointer-events: none;
+        opacity: 0;
+        transform: scale(0.85);
+        transition: opacity 0.2s, transform 0.2s var(--hs-ease);
+    }
+
+    .camera-active .live-prediction-bubble {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .live-prediction-bubble.flash {
+        animation: predFlash 0.3s var(--hs-ease);
+    }
+
+    @keyframes predFlash {
+        0% {
+            background: rgba(59, 111, 239, 0.8);
+            transform: scale(1.15);
+        }
+
+        100% {
+            background: rgba(10, 10, 10, 0.6);
+            transform: scale(1);
+        }
+    }
+
+    /* Input group */
+    .input-group-custom {
+        margin-bottom: 1rem;
+    }
+
+    .input-group-custom label {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--hs-text-mid);
+        margin-bottom: 0.4rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .generate-row {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .generate-row .modern-select {
+        min-width: 200px;
+        flex: 1;
+    }
+
+    .generate-row .btn-generate {
+        white-space: nowrap;
+    }
+
+    /* Clear button - text only */
+    .btn-clear {
+        background: none;
+        border: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--hs-text-faint);
+        cursor: pointer;
+        padding: 0.2rem 0;
+        transition: color var(--hs-dur-fast);
+    }
+
+    .btn-clear:hover {
+        color: var(--hs-danger);
+    }
+
+    /* Auto-speak toggle */
+    .autospeak-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.82rem;
+        color: var(--hs-text-soft);
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .toggle-switch {
+        width: 36px;
+        height: 20px;
+        border-radius: var(--hs-r-pill);
+        background: var(--hs-bg-soft, #e8eef4);
+        border: 1px solid var(--hs-border);
+        position: relative;
+        transition: background var(--hs-dur-fast);
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .toggle-switch input {
+        display: none;
+    }
+
+    .toggle-switch::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.2);
+        transition: transform var(--hs-dur-fast) var(--hs-ease);
+    }
+
+    .toggle-switch.on {
+        background: var(--hs-primary);
+        border-color: var(--hs-primary);
+    }
+
+    .toggle-switch.on::after {
+        transform: translateX(16px);
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<main class="generator-feature">
+<section class="generator-feature" data-animate="section">
     <div class="generator-card">
-        <div class="generator-header">
-            <h2>Sign-Text & Text-Sign Converter</h2>
-            <p>Convert between sign language and text in both directions.</p>
+
+        <!-- Header -->
+        <div class="converter-header">
+            <div>
+                <span class="converter-badge">
+                    <i data-lucide="language" style="width:12px;height:12px;"></i>
+                    ASL Converter
+                </span>
+                <h2 style="font-size:1.75rem;font-weight:800;letter-spacing:-0.025em;margin-bottom:0.3rem;">
+                    Sign-Text &amp; Text-Sign
+                </h2>
+                <p style="color:var(--hs-text-soft);font-size:0.92rem;margin:0;">
+                    Translate between ASL gestures and text — in both directions.
+                </p>
+            </div>
         </div>
 
-        <!-- Feature Toggle Navigation -->
-        <div class="tab-navigation">
-            <button class="tab-button active" data-tab="signToTextPanel">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                    <line x1="8" y1="21" x2="16" y2="21"></line>
-                    <line x1="12" y1="17" x2="12" y2="21"></line>
-                </svg>
+        <!-- Tab Navigation -->
+        <div class="tab-navigation" role="tablist" aria-label="Conversion mode">
+            <button class="tab-button active" data-tab="signToTextPanel" role="tab" aria-selected="true"
+                aria-controls="signToTextPanel" id="tab-sign-text">
+                <i data-lucide="camera" style="width:15px;height:15px;"></i>
                 Sign → Text
             </button>
-            <button class="tab-button" data-tab="textToSignPanel">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
+            <button class="tab-button" data-tab="textToSignPanel" role="tab" aria-selected="false"
+                aria-controls="textToSignPanel" id="tab-text-sign">
+                <i data-lucide="type" style="width:15px;height:15px;"></i>
                 Text → Sign
             </button>
         </div>
 
-        <!-- Sign → Text Panel (Camera-based recognition) -->
-        <div id="signToTextPanel" class="tab-content active">
+        <!-- ── Panel 1: Sign → Text ───────────────────────── -->
+        <div id="signToTextPanel" class="tab-content active" role="tabpanel" aria-labelledby="tab-sign-text">
             <div class="feature-panel">
-                <h3>Sign → Text: Real-Time Recognition</h3>
-                <p class="text-muted mb-4">Use your camera to detect sign language gestures and convert them to
-                    text.</p>
+                <p class="panel-title">Real-Time ASL Recognition</p>
+                <p class="panel-subtitle">
+                    Point your camera at your hand. Predictions appear automatically — each stable sign is added to the
+                    text output below.
+                </p>
 
-                <div class="controls mb-3">
-                    <button id="startCameraButton" class="btn-primary">Start Camera</button>
-                    <button id="closeCameraButton" class="btn-danger-custom hidden">Stop Camera</button>
+                <!-- Controls -->
+                <div class="camera-controls">
+                    <button id="startCameraButton" class="btn-primary" aria-label="Start webcam">
+                        <i data-lucide="video" style="width:16px;height:16px;"></i>
+                        Start Camera
+                    </button>
+                    <button id="closeCameraButton" class="btn-danger-custom hidden" aria-label="Stop webcam">
+                        <i data-lucide="video-off" style="width:16px;height:16px;"></i>
+                        Stop Camera
+                    </button>
+                    <label class="autospeak-toggle" title="Read each detected character aloud">
+                        <div class="toggle-switch on" id="autoSpeakSwitch" role="switch" aria-checked="true"></div>
+                        Auto-speak
+                    </label>
                 </div>
 
-                <!-- Camera Feed Container -->
-                <div id="cameraFeedContainer" class="camera-feed-box hidden">
-                    <img id="cameraFeed" src="" alt="Camera Stream">
-                </div>
-
-                <div class="info-box mt-4">
-                    <p class="mb-0"><strong>Tip:</strong> Ensure good lighting and position your hand clearly in the
-                        camera frame for best results.</p>
-                </div>
-
-                <!-- Recognized Text Display -->
-                <div class="mt-4">
-                    <label class="form-label">Recognized Text:</label>
-                    <div id="recognizedText" class="p-3 bg-light border rounded" style="min-height: 60px; font-size: 1.2rem;">
-                        <span class="text-muted">Waiting for sign language input...</span>
+                <!-- Camera Feed -->
+                <div id="cameraFeedContainer" class="camera-feed-box hidden" aria-label="Live camera feed">
+                    <div class="live-indicator" aria-hidden="true">
+                        <span class="live-dot"></span> LIVE
                     </div>
-                    <div class="mt-2 text-end">
-                        <button id="clearTextBtn" class="btn btn-sm btn-outline-secondary">Clear Text</button>
+                    <div class="live-prediction-bubble" id="livePredBubble" aria-live="polite"
+                        aria-label="Current gesture">—</div>
+                    <img id="cameraFeed" src="" alt="Live ASL camera stream" loading="lazy">
+                </div>
+
+                <!-- Tip -->
+                <div class="info-box mt-3" style="display:none;" id="cameraTip">
+                    <strong>Tip:</strong> Ensure good lighting. Keep your hand centred in the frame.
+                </div>
+
+                <!-- Prediction Output -->
+                <div class="prediction-area">
+                    <div class="prediction-label">
+                        <span>Recognized Text</span>
+                        <button class="btn-clear" id="clearTextBtn" aria-label="Clear recognized text">Clear</button>
+                    </div>
+                    <div id="recognizedText" aria-live="polite" aria-label="Recognized sign language text">
+                        <span class="text-muted" id="recognizedPlaceholder">Waiting for sign language input…</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Text → Sign Panel (Image-based rendering) -->
-        <div id="textToSignPanel" class="tab-content">
+        <!-- ── Panel 2: Text → Sign ───────────────────────── -->
+        <div id="textToSignPanel" class="tab-content" role="tabpanel" aria-labelledby="tab-text-sign">
             <div class="feature-panel">
-                <h3>Text → Sign: Instant Translation</h3>
-                <p class="text-muted mb-4">Enter text to see the corresponding sign language alphabet images.</p>
+                <p class="panel-title">Instant Fingerspelling</p>
+                <p class="panel-subtitle">
+                    Type any text to see the corresponding ASL hand-sign images, letter by letter.
+                </p>
 
-                <form id="generatorForm">
+                <form id="generatorForm" novalidate>
                     <div class="input-group-custom">
-                        <label for="inputText">Enter Your Text</label>
+                        <label for="inputText">Your Text</label>
                         <textarea id="inputText" class="modern-textarea"
-                            placeholder="Enter text to convert into sign language..." required></textarea>
+                            placeholder="Type something to translate into sign language…" maxlength="200"
+                            aria-required="true" aria-describedby="charCount"></textarea>
+                        <div style="text-align:right;font-size:0.75rem;color:var(--hs-text-faint);margin-top:0.3rem;"
+                            id="charCount">0 / 200</div>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="input-group-custom mb-0">
-                            <select id="languageSelect" class="modern-select">
-                                <option value="ASL">American Sign Language (ASL)</option>
-                                <option value="ISL">Indian Sign Language (ISL)</option>
-                            </select>
-                        </div>
+                    <div class="generate-row">
+                        <select id="languageSelect" class="modern-select" aria-label="Sign language variant">
+                            <option value="ASL">🇺🇸 American Sign Language (ASL)</option>
+                            <option value="ISL">🇮🇳 Indian Sign Language (ISL)</option>
+                        </select>
                         <button type="submit" id="generateBtn" class="btn-generate">
-                            <span>Show Signs</span>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline>
-                            </svg>
+                            <i data-lucide="zap" style="width:16px;height:16px;"></i>
+                            Show Signs
                         </button>
                     </div>
                 </form>
 
-                <!-- Error State -->
-                <div id="errorMessage" class="alert alert-danger mt-4 hidden"></div>
+                <!-- Error -->
+                <div id="errorMessage" class="alert alert-danger mt-3 hidden" role="alert"></div>
 
-                <!-- Sign Output Container -->
-                <div id="signOutput" class="sign-output-container hidden"></div>
+                <!-- Output -->
+                <div id="signOutput" class="sign-output-container hidden" aria-live="polite"
+                    aria-label="Sign language output"></div>
             </div>
         </div>
 
-    </div>
-</main>
+    </div><!-- /.generator-card -->
+</section>
 {% endblock %}
 
 {% block extra_js %}
@@ -116,12 +349,11 @@
 <script src="{{ url_for('static', filename='realtime-interaction.js') }}"></script>
 
 <script>
-    // Initialize Camera Controller for Sign → Text panel
-    let cameraController = null;
-
     document.addEventListener('DOMContentLoaded', function () {
-        // Initialize camera controller
-        cameraController = initCameraController({
+
+        /* ── 1. Camera Controller ─────────────────────────────── */
+        const cameraContainer = document.getElementById('cameraFeedContainer');
+        let cameraController = initCameraController({
             startButtonId: 'startCameraButton',
             stopButtonId: 'closeCameraButton',
             feedElementId: 'cameraFeed',
@@ -129,61 +361,108 @@
             videoFeedUrl: "{{ url_for('video_feed') }}"
         });
 
-        // Initialize Real-Time Interaction (WebSocket & Speech)
-        const recognizedTextDisplay = document.getElementById('recognizedText');
-        const clearTextBtn = document.getElementById('clearTextBtn');
+        /* Animated glow on camera start/stop */
+        document.getElementById('startCameraButton').addEventListener('click', () => {
+            cameraContainer.classList.add('camera-active');
+            document.getElementById('cameraTip').style.display = 'block';
+        });
+        document.getElementById('closeCameraButton').addEventListener('click', () => {
+            cameraContainer.classList.remove('camera-active');
+            document.getElementById('livePredBubble').textContent = '—';
+        });
+
+        /* ── 2. Auto-speak Toggle ─────────────────────────────── */
+        const autoSpeakSwitch = document.getElementById('autoSpeakSwitch');
+        let autoSpeakOn = true;
+
+        autoSpeakSwitch.addEventListener('click', function () {
+            autoSpeakOn = !autoSpeakOn;
+            this.classList.toggle('on', autoSpeakOn);
+            this.setAttribute('aria-checked', autoSpeakOn.toString());
+            isAutoSpeakEnabled = autoSpeakOn;
+        });
+
+        /* ── 3. WebSocket + Predictions ──────────────────────── */
+        const recognizedText = document.getElementById('recognizedText');
+        const placeholder = document.getElementById('recognizedPlaceholder');
+        const livePredBubble = document.getElementById('livePredBubble');
 
         if (typeof initWebSocket === 'function') {
             initWebSocket({
-                onStablePrediction: (char, fullText) => {
-                    // Update display
-                    recognizedTextDisplay.innerText = fullText;
-                    recognizedTextDisplay.classList.remove('text-muted');
+                /* Live per-frame prediction — show in bubble */
+                onPrediction: (char) => {
+                    livePredBubble.textContent = char;
+                    livePredBubble.classList.remove('flash');
+                    void livePredBubble.offsetWidth; /* reflow to restart animation */
+                    livePredBubble.classList.add('flash');
                 },
-                onError: (err) => {
-                    console.error("Realtime Interaction Error:", err);
-                }
+                /* Stable prediction — append with char-lock animation */
+                onStablePrediction: (char, fullText) => {
+                    if (placeholder) placeholder.remove();
+
+                    /* Create or update spans for each character */
+                    recognizedText.innerHTML = '';
+                    const chars = fullText.trim().split('');
+                    chars.forEach((c, i) => {
+                        const span = document.createElement('span');
+                        span.className = 'prediction-char';
+                        span.style.animationDelay = `${Math.min(i * 0.04, 0.5)}s`;
+                        span.textContent = c;
+                        recognizedText.appendChild(span);
+                    });
+                },
+                onError: (err) => { console.error('WS error:', err); }
             });
         }
 
-        // Clear text button handler
-        if (clearTextBtn) {
-            clearTextBtn.addEventListener('click', () => {
-                if (typeof clearAccumulatedText === 'function') {
-                    clearAccumulatedText();
-                }
-                recognizedTextDisplay.innerHTML = '<span class="text-muted">Waiting for sign language input...</span>';
-            });
-        }
+        /* ── 4. Clear button ──────────────────────────────────── */
+        document.getElementById('clearTextBtn').addEventListener('click', () => {
+            if (typeof clearAccumulatedText === 'function') clearAccumulatedText();
+            recognizedText.innerHTML =
+                '<span class="text-muted" id="recognizedPlaceholder">Waiting for sign language input…</span>';
+        });
 
-        // Setup tab switching for sign/text toggle
+        /* ── 5. Tab Switching (GSAP cross-fade) ──────────────── */
         setupFeatureToggle('.tab-button', '.tab-content', {
             onSwitch: (targetPanel) => {
-                // Stop camera if switching to Text → Sign
                 if (targetPanel === 'textToSignPanel' && cameraController) {
                     cameraController.stopCamera();
+                    cameraContainer.classList.remove('camera-active');
                 }
             }
         });
 
-        // Setup Text → Sign form submission
-        const form = document.getElementById('generatorForm');
+        /* ── 6. Text → Sign Form ─────────────────────────────── */
+        const textarea = document.getElementById('inputText');
+        const charCount = document.getElementById('charCount');
 
-        form.addEventListener('submit', function (e) {
+        textarea.addEventListener('input', () => {
+            charCount.textContent = `${textarea.value.length} / 200`;
+        });
+
+        document.getElementById('generatorForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            const inputText = document.getElementById('inputText').value.trim();
+            const text = textarea.value.trim();
+            const err = document.getElementById('errorMessage');
+            err.classList.add('hidden');
 
-            if (!inputText) {
-                showError('errorMessage', 'Please enter some text');
+            if (!text) {
+                err.textContent = 'Please enter some text to convert.';
+                err.classList.remove('hidden');
+                textarea.focus();
                 return;
             }
-
-            // Clear previous error
-            document.getElementById('errorMessage').classList.add('hidden');
-
-            // Call conversion function from feature-utils.js
-            convertTextToSign(inputText, 'signOutput');
+            convertTextToSign(text, 'signOutput');
         });
+
+        /* ── 7. Tab ARIA updates ─────────────────────────────── */
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab-button').forEach(b => b.setAttribute('aria-selected', 'false'));
+                this.setAttribute('aria-selected', 'true');
+            });
+        });
+
     });
 </script>
 {% endblock %}

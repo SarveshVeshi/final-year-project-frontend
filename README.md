@@ -9,6 +9,8 @@ A web application that detects and translates American Sign Language (ASL) gestu
 - [Problem Statement](#problem-statement)
 - [Project Purpose](#project-purpose)
 - [Tech Stack](#tech-stack)
+- [🎨 Premium UI Redesign](#-premium-ui-redesign)
+- [Frontend Structure](#frontend-structure)
 - [Architecture Overview](#architecture-overview)
 - [Folder Structure](#folder-structure)
 - [Installation](#installation)
@@ -53,25 +55,90 @@ HandSignify provides:
 
 ---
 
-## Design System
+## 🎨 Premium UI Redesign
 
-The UI is built on a small, token-based design system defined in `static/css/advanced-theme.css`:
+> **UI Version:** v2.0 — Premium Light Theme (February 2026)
+> **Branch:** `feature/premium-light-ui-redesign`
 
-- **Color scale**
-  - `--hs-color-bg`, `--hs-color-bg-soft`, `--hs-color-surface`, `--hs-color-text-main`, `--hs-color-text-soft`
-  - `--hs-color-primary`, `--hs-color-primary-soft`, `--hs-color-primary-strong`, `--hs-color-accent`
-- **Spacing scale**
-  - `--hs-space-1` … `--hs-space-7` for consistent padding/margins
-- **Radius scale**
-  - `--hs-radius-sm`, `--hs-radius-md`, `--hs-radius-lg`, `--hs-radius-pill`
-- **Shadow system**
-  - `--hs-shadow-soft`, `--hs-shadow-medium`, `--hs-shadow-floating`
-- **Motion**
-  - `--hs-ease-standard`, `--hs-duration-fast`, `--hs-duration-med`, `--hs-duration-slow`
+The frontend was fully redesigned to deliver a polished, SaaS-grade product experience with smooth micro-interactions, modern glassmorphism, and an emotion-driven, accessibility-focused interface.
 
-Components like the hero, feature cards, and camera frame are all composed using these tokens instead of ad‑hoc values.
+### Visual Design Highlights
 
-Screenshots and UI details can be added under `static/ui/` (e.g. `static/ui/home.png`) and referenced from this README when available.
+- **Soft light theme** — layered blue/purple/teal mesh gradients on a `#f0f4f8` base
+- **Glassmorphism** — `backdrop-filter: blur(28px)` on navbar, glass cards, and auth panels
+- **Gradient pill buttons** (blue → indigo) with ripple-on-click and hover lift
+- **Inter typeface** from Google Fonts for clean, modern typography
+- **Floating pill navbar** with user avatar initials for logged-in state
+- **Cursor glow** — physics-based `requestAnimationFrame` mouse follower (desktop only)
+
+### UI Screenshots
+
+| Login Page | Register Page | Sign-Text Converter |
+|---|---|---|
+| Glass card with gradient icon, clean form fields, divider | Consistent card design with user-plus icon | Tab switcher, live prediction output, auto-speak toggle |
+
+*Screenshots: `docs/screenshots/` — captured on v2.0 launch.*
+
+### Animation System
+
+| Interaction | Mechanism | File |
+|---|---|---|
+| Button click ripple | Injected `<span>` + `@keyframes rippleAnim` | `premium-animations.js` |
+| Card hover lift | `translateY(-5px)` + elevated shadow | `advanced-theme.css` |
+| Cursor glow | Physics lerp via `requestAnimationFrame` | `premium-animations.js` |
+| Page entrance | `@keyframes pageEnter` fade+slide | `advanced-theme.css` |
+| Tab panel switch | `@keyframes fadeSlideUp` | `advanced-theme.css` |
+| Camera active glow | `@keyframes cameraGlow` pulsing ring | `advanced-theme.css` |
+| Live prediction | `@keyframes predFlash` on bubble | `sign_text_converter.html` |
+| Character lock | `@keyframes charLock` per-char blur+scale | `advanced-theme.css` |
+| Card reveal | GSAP `ScrollTrigger` stagger entrance | `premium-animations.js` |
+
+### Design System (v2.0 Key Tokens)
+
+All values are CSS custom properties on `:root` in `static/css/advanced-theme.css`:
+
+```css
+--hs-primary:     #3b6fef;                         /* Brand blue         */
+--hs-indigo:      #6366f1;                         /* Gradient accent    */
+--hs-bg:          #f0f4f8;                         /* Page background    */
+--hs-text-main:   #0f172a;                         /* Primary text       */
+--hs-text-soft:   #64748b;                         /* Secondary text     */
+--hs-ease:        cubic-bezier(0.22, 1, 0.36, 1);  /* Spring ease        */
+--hs-dur-med:     280ms;                           /* Default transition */
+--hs-r-pill:      999px;                           /* Pill shape         */
+--hs-shadow-md:   0 12px 40px rgba(15,23,42,0.10); /* Elevated shadow    */
+```
+
+> 📖 **Full Documentation:** [`docs/UI_ARCHITECTURE.md`](docs/UI_ARCHITECTURE.md) — covers the complete design system, color palette, typography, spacing scale, shadow system, animation architecture, WebSocket UI handling, CSS naming conventions, JS state management, responsiveness strategy, and accessibility (WCAG contrast ratios, ARIA, keyboard navigation).
+
+---
+
+## Frontend Structure
+
+```
+static/
+├── css/
+│   └── advanced-theme.css      ← Master design system (all tokens + components)
+├── premium-animations.js       ← GSAP + JS micro-interactions
+├── camera-controller.js        ← Webcam state management
+├── realtime-interaction.js     ← Socket.IO + speech synthesis
+├── feature-utils.js            ← Tab switching + Text→Sign conversion
+└── sign_generator.css          ← Sign output styles (converter page)
+
+templates/
+├── base.html                   ← Shell, navbar, footer, font/script includes
+├── home.html                   ← Landing page (hero, features, how-it-works)
+├── sign_text_converter.html    ← Core feature page (Sign↔Text conversion)
+├── login.html                  ← Authentication — sign in
+├── register.html               ← Authentication — sign up
+├── dashboard.html              ← Logged-in user dashboard
+└── voice_converter.html        ← Voice ↔ Sign mode
+
+docs/
+└── UI_ARCHITECTURE.md          ← Complete UI design + animation documentation
+```
+
+**Rule for future contributors:** All design values must use CSS custom properties from `--hs-*` namespace. Never hardcode colors, shadows, or radii inline.
 
 ---
 

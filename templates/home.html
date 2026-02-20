@@ -3,112 +3,151 @@
 {% block title %}HandSignify | AI Sign Language Detection{% endblock %}
 
 {% block content %}
-<!-- Hero (no video) -->
+
+<!-- ── Hero ──────────────────────────────────────────────────── -->
 <section class="hs-hero" data-animate="section">
     <div class="hs-hero-grid">
+
+        <!-- Copy -->
         <div class="hs-hero-copy">
-            <p class="hs-eyebrow">AI sign language studio</p>
-            <h1 class="hs-hero-title">Bring sign language into every conversation.</h1>
+            <p class="hs-eyebrow">
+                <i data-lucide="sparkles" style="width:11px;height:11px;"></i>
+                AI Sign Language Studio
+            </p>
+            <h1 class="hs-hero-title">
+                Bring sign language into <span>every conversation.</span>
+            </h1>
             <p class="hs-hero-subtitle">
-                HandSignify uses real-time computer vision and ML to translate ASL gestures into text, speech, and
-                interactive visuals — all in your browser.
+                HandSignify uses real-time computer vision and ML to translate ASL gestures
+                into text, speech, and interactive visuals — all in your browser.
             </p>
             <div class="hs-hero-cta">
-                <a href="{{ url_for('sign_text_converter') }}" class="btn-primary">Try Sign Converter</a>
-                <a href="{{ url_for('voice_converter') }}" class="btn-outline">Explore Voice &amp; Signs</a>
-                <span class="hs-hero-meta">No installs. Works with your existing webcam.</span>
+                <a href="{{ url_for('sign_text_converter') }}" class="btn-primary">
+                    <i data-lucide="camera" style="width:16px;height:16px;"></i>
+                    Try Sign Converter
+                </a>
+                <a href="{{ url_for('voice_converter') }}" class="btn-outline">
+                    Explore Voice &amp; Signs
+                </a>
+                <span class="hs-hero-meta">✓ No installs &nbsp;·&nbsp; ✓ Works with any webcam</span>
             </div>
         </div>
+
+        <!-- Visual panels -->
         <div class="hs-hero-visual">
             <div class="hs-hero-panel hs-hero-panel--primary">
-                <h3>Realtime recognition</h3>
-                <p>Camera frames stream into a MediaPipe + Random Forest pipeline, returning stable predictions in
-                    under a second.</p>
-                <ul class="mb-0">
-                    <li>ASL alphabet &amp; phrases</li>
+                <h3>
+                    <i data-lucide="zap"
+                        style="width:14px;height:14px;color:var(--hs-primary);vertical-align:-2px;margin-right:5px;"></i>
+                    Real-time recognition
+                </h3>
+                <p>Camera frames stream into a MediaPipe + Random Forest pipeline,
+                    returning stable predictions in under a second.</p>
+                <ul>
+                    <li>ASL alphabet &amp; common phrases</li>
                     <li>Stability window for noise reduction</li>
                     <li>Built for live demos &amp; classrooms</li>
                 </ul>
             </div>
             <div class="hs-hero-panel hs-hero-panel--secondary">
-                <h3>One project, three modes</h3>
-                <p class="mb-2">Sign → Text, Text → Signs, Voice ↔ Signs — all powered by the same backend.</p>
-                <ul class="mb-0">
+                <h3>
+                    <i data-lucide="layers"
+                        style="width:14px;height:14px;color:var(--hs-indigo);vertical-align:-2px;margin-right:5px;"></i>
+                    One project, three modes
+                </h3>
+                <p style="margin-bottom:0.5rem;">Sign → Text, Text → Signs, Voice ↔ Signs — all from the same backend.
+                </p>
+                <ul>
                     <li>Camera dashboard for live signs</li>
                     <li>Converters for practice &amp; teaching</li>
                     <li>Socket-based streaming UX</li>
                 </ul>
             </div>
         </div>
+
     </div>
 </section>
 
-<!-- Features Section -->
+<!-- ── Capabilities ───────────────────────────────────────────── -->
 <section class="hs-section hs-features" data-animate="section">
     <div class="hs-features-header">
-        <p class="hs-eyebrow">Capabilities</p>
-        <h2>Everything you need to prototype sign-aware experiences.</h2>
-        <p class="hs-hero-subtitle">Use HandSignify as a playground for assistive interfaces, teaching tools, or
-            research experiments.</p>
+        <p class="hs-eyebrow" style="display:inline-flex;">Capabilities</p>
+        <h2 style="font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;letter-spacing:-0.02em;margin-block:0.6rem;">
+            Everything for sign-aware experiences.
+        </h2>
+        <p style="color:var(--hs-text-soft);font-size:0.95rem;line-height:1.75;">
+            Use HandSignify as a playground for assistive interfaces, teaching tools, or research experiments.
+        </p>
     </div>
     <div class="hs-features-grid">
         <article class="hs-feature-card">
-            <div class="hs-feature-icon">
-                <i data-lucide="monitor"></i>
-            </div>
+            <div class="hs-feature-icon"><i data-lucide="monitor"></i></div>
             <h3>Sign → Text</h3>
-            <p>Stream webcam input into a hand-landmark model and get stable text output suitable for chat, captions,
-                or logs.</p>
+            <p>Stream webcam input into a hand-landmark model and get stable text output for captions or logs.</p>
         </article>
         <article class="hs-feature-card">
-            <div class="hs-feature-icon">
-                <i data-lucide="type"></i>
-            </div>
+            <div class="hs-feature-icon"><i data-lucide="type"></i></div>
             <h3>Text → Signs</h3>
-            <p>Turn any phrase into a sequence of ASL letter cards, perfect for learning flows and interactive explainers.</p>
+            <p>Turn any phrase into a sequence of ASL letter cards — perfect for learning and teaching flows.</p>
         </article>
         <article class="hs-feature-card">
-            <div class="hs-feature-icon">
-                <i data-lucide="mic"></i>
-            </div>
+            <div class="hs-feature-icon"><i data-lucide="mic"></i></div>
             <h3>Voice → Signs</h3>
             <p>Use browser speech recognition to convert spoken language into sign sequences in real time.</p>
         </article>
         <article class="hs-feature-card">
-            <div class="hs-feature-icon">
-                <i data-lucide="volume-2"></i>
-            </div>
+            <div class="hs-feature-icon"><i data-lucide="volume-2"></i></div>
             <h3>Signs → Voice</h3>
-            <p>Take detected signs, accumulate text, and play them back using speech synthesis for accessible dialogs.</p>
+            <p>Detect signs, accumulate text, and speak them back using synthesis for accessible dialogs.</p>
         </article>
     </div>
 </section>
 
-<!-- How it works -->
+<!-- ── How it works ───────────────────────────────────────────── -->
 <section class="hs-section hs-how" data-animate="section">
-    <p class="hs-eyebrow text-center">Flow</p>
-    <h2 class="text-center mb-3">From camera frame to meaningful output.</h2>
-    <p class="hs-hero-subtitle text-center mx-auto" style="max-width: 640px;">
-        Under the hood, HandSignify is a thin, inspectable stack: Flask, Socket.IO, MediaPipe, and a Random Forest
-        classifier — wired for clarity.
-    </p>
-
+    <div style="text-align:center;max-width:580px;margin-inline:auto;margin-bottom:2.5rem;">
+        <p class="hs-eyebrow" style="display:inline-flex;">Flow</p>
+        <h2 style="font-size:clamp(1.5rem,2.8vw,2rem);font-weight:800;letter-spacing:-0.02em;margin-block:0.6rem;">
+            From camera frame to meaningful output.
+        </h2>
+        <p style="color:var(--hs-text-soft);font-size:0.92rem;line-height:1.75;">
+            Flask · Socket.IO · MediaPipe · Random Forest — wired for clarity and speed.
+        </p>
+    </div>
     <div class="hs-steps-grid">
         <article class="hs-step-card">
             <div class="hs-step-index">1</div>
             <h3>Capture</h3>
-            <p>Frames are streamed from the browser to the backend endpoint powering the dashboard and converters.</p>
+            <p>Frames stream from the browser into the backend MJPEG endpoint.</p>
         </article>
         <article class="hs-step-card">
             <div class="hs-step-index">2</div>
             <h3>Interpret</h3>
-            <p>MediaPipe extracts 21-point hand landmarks which are normalized and fed into a trained Random Forest model.</p>
+            <p>MediaPipe extracts 21-point hand landmarks fed into a trained Random Forest model.</p>
         </article>
         <article class="hs-step-card">
             <div class="hs-step-index">3</div>
             <h3>Deliver</h3>
-            <p>Predictions stream back over WebSocket and update the UI — as text, signs, or speech — without reloading the page.</p>
+            <p>Predictions stream back via WebSocket and update the UI as text, signs, or speech.</p>
         </article>
     </div>
 </section>
+
+<!-- ── CTA Banner ─────────────────────────────────────────────── -->
+<section class="hs-section" data-animate="section" style="padding-top:1rem;padding-bottom:4rem;">
+    <div
+        style="max-width:640px;margin-inline:auto;text-align:center;padding:2.5rem 2rem;border-radius:var(--hs-r-xl);background:linear-gradient(135deg,rgba(59,111,239,0.1),rgba(99,102,241,0.08));border:1px solid rgba(59,111,239,0.2);">
+        <h2 style="font-size:1.6rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:0.6rem;">
+            Ready to break barriers?
+        </h2>
+        <p style="color:var(--hs-text-soft);font-size:0.95rem;margin-bottom:1.5rem;">
+            Start translating signs in seconds — no account required.
+        </p>
+        <a href="{{ url_for('sign_text_converter') }}" class="btn-primary" style="font-size:1rem;">
+            <i data-lucide="arrow-right" style="width:18px;height:18px;"></i>
+            Open Converter
+        </a>
+    </div>
+</section>
+
 {% endblock %}

@@ -1,310 +1,633 @@
 {% extends "base.html" %}
 
-{% block title %}Voice-Sign & Sign-Voice Converter | HandSignify{% endblock %}
+{% block title %}Help & Support | HandSignify{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='sign_generator.css') }}">
+<style>
+    /* Hero Section */
+    .support-hero {
+        background: linear-gradient(135deg, rgba(59, 111, 239, 0.1) 0%, rgba(236, 72, 153, 0.05) 100%);
+        border: 1px solid var(--hs-border);
+        border-radius: var(--hs-r-lg);
+        padding: 3rem 2rem;
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .support-hero h1 {
+        font-size: 2.5rem;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        color: var(--hs-text-main);
+        margin: 0 0 0.75rem 0;
+        background: linear-gradient(135deg, #3b6fef 0%, #ec4899 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .support-hero p {
+        font-size: 1.1rem;
+        color: var(--hs-text-soft);
+        margin: 0;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Section Headers */
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        margin-top: 2rem;
+    }
+
+    .section-icon {
+        font-size: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, rgba(59, 111, 239, 0.15) 0%, rgba(59, 111, 239, 0.05) 100%);
+        border: 2px solid var(--hs-primary);
+        border-radius: var(--hs-r-lg);
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--hs-text-main);
+        letter-spacing: -0.02em;
+        margin: 0;
+    }
+
+    /* Converter Cards - Getting Started */
+    .converter-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .converter-card {
+        background: linear-gradient(135deg, var(--hs-surface-light) 0%, rgba(255, 255, 255, 0.5) 100%);
+        border: 2px solid var(--hs-border);
+        border-radius: var(--hs-r-lg);
+        padding: 1.75rem;
+        text-align: center;
+        transition: all var(--hs-dur-fast) var(--hs-ease);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .converter-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #3b6fef, #ec4899, #f97316, #06b6d4);
+        background-size: 300% 100%;
+    }
+
+    .converter-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(59, 111, 239, 0.15);
+        border-color: var(--hs-primary);
+    }
+
+    .converter-icon {
+        font-size: 3rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .converter-card h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--hs-text-main);
+        margin: 0 0 0.5rem 0;
+    }
+
+    .converter-card p {
+        font-size: 0.9rem;
+        color: var(--hs-text-soft);
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    /* Tips Grid */
+    .tips-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .tip-card {
+        background: linear-gradient(135deg, rgba(59, 111, 239, 0.08) 0%, rgba(59, 111, 239, 0.02) 100%);
+        border: 2px solid rgba(59, 111, 239, 0.12);
+        border-radius: var(--hs-r-lg);
+        padding: 1.5rem;
+        transition: all var(--hs-dur-fast) var(--hs-ease);
+    }
+
+    .tip-card:hover {
+        border-color: var(--hs-primary);
+        box-shadow: 0 8px 16px rgba(59, 111, 239, 0.1);
+        transform: translateY(-4px);
+    }
+
+    .tip-icon {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+        display: inline-block;
+    }
+
+    .tip-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--hs-text-main);
+        margin: 0 0 0.5rem 0;
+    }
+
+    .tip-text {
+        font-size: 0.9rem;
+        color: var(--hs-text-soft);
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    /* FAQ Section */
+    .faq-container {
+        margin-bottom: 3rem;
+    }
+
+    .faq-item {
+        margin-bottom: 1rem;
+    }
+
+    .faq-question {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: linear-gradient(135deg, var(--hs-surface-light) 0%, rgba(255, 255, 255, 0.5) 100%);
+        border: 2px solid var(--hs-border);
+        border-radius: var(--hs-r-lg);
+        padding: 1.25rem;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--hs-text-main);
+        transition: all var(--hs-dur-fast) var(--hs-ease);
+    }
+
+    .faq-question:hover {
+        border-color: var(--hs-primary);
+        background: rgba(59, 111, 239, 0.04);
+    }
+
+    .faq-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background: var(--hs-primary);
+        color: white;
+        border-radius: 50%;
+        flex-shrink: 0;
+        transition: transform 0.3s var(--hs-ease);
+        font-weight: 700;
+    }
+
+    .faq-toggle.active {
+        transform: rotate(180deg);
+    }
+
+    .faq-answer {
+        display: none;
+        padding: 1.5rem;
+        background: rgba(59, 111, 239, 0.05);
+        border: 2px solid rgba(59, 111, 239, 0.1);
+        border-top: none;
+        border-radius: 0 0 var(--hs-r-lg) var(--hs-r-lg);
+        margin-top: -2px;
+        color: var(--hs-text-main);
+        animation: slideDown 0.3s var(--hs-ease);
+        line-height: 1.6;
+    }
+
+    .faq-answer.active {
+        display: block;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Contact Grid */
+    .contact-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .contact-card {
+        background: linear-gradient(135deg, var(--hs-surface-light) 0%, rgba(255, 255, 255, 0.5) 100%);
+        border: 2px solid var(--hs-border);
+        border-radius: var(--hs-r-lg);
+        padding: 2rem 1.5rem;
+        text-align: center;
+        transition: all var(--hs-dur-fast) var(--hs-ease);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .contact-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(59, 111, 239, 0.1) 0%, transparent 70%);
+        transition: all 0.3s var(--hs-ease);
+    }
+
+    .contact-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 28px rgba(59, 111, 239, 0.15);
+        border-color: var(--hs-primary);
+    }
+
+    .contact-card:hover::before {
+        top: 50%;
+        right: -30%;
+    }
+
+    .contact-card-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .contact-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 800;
+        font-size: 1.8rem;
+        margin: 0 auto 1rem;
+        box-shadow: 0 8px 16px rgba(59, 111, 239, 0.2);
+    }
+
+    .contact-name {
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: var(--hs-text-main);
+        margin: 0 0 0.25rem 0;
+    }
+
+    .contact-role {
+        font-size: 0.85rem;
+        color: var(--hs-primary);
+        font-weight: 600;
+        margin: 0 0 1rem 0;
+    }
+
+    .contact-email {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--hs-primary);
+        color: white;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--hs-r-pill);
+        transition: all var(--hs-dur-fast);
+    }
+
+    .contact-email:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(59, 111, 239, 0.3);
+    }
+
+    .avatar-green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .avatar-pink { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); }
+    .avatar-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+    .avatar-cyan { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+
+    /* Resources Grid */
+    .resources-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .resource-card {
+        background: linear-gradient(135deg, var(--hs-surface-light) 0%, rgba(255, 255, 255, 0.5) 100%);
+        border: 2px solid var(--hs-border);
+        border-radius: var(--hs-r-lg);
+        padding: 1.5rem;
+        text-decoration: none;
+        color: var(--hs-text-main);
+        transition: all var(--hs-dur-fast);
+    }
+
+    .resource-card:hover {
+        transform: translateY(-6px);
+        border-color: var(--hs-primary);
+        box-shadow: 0 12px 24px rgba(59, 111, 239, 0.12);
+    }
+
+    .resource-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+        display: inline-block;
+    }
+
+    .resource-title {
+        font-weight: 700;
+        font-size: 1.05rem;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .resource-desc {
+        font-size: 0.9rem;
+        color: var(--hs-text-soft);
+        margin: 0;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<main class="generator-feature">
+<main class="generator-feature" data-animate="section">
     <div class="generator-card">
-        <div class="generator-header">
-            <h2>Voice-Sign & Sign-Voice Converter</h2>
-            <p>Convert between voice and sign language in both directions.</p>
+        <!-- Hero Section -->
+        <div class="support-hero">
+            <h1>Help & Support</h1>
+            <p>Everything you need to know about using HandSignify converters. Get started in minutes and master all features.</p>
         </div>
 
-        <!-- Feature Toggle Navigation -->
-        <div class="tab-navigation">
-            <button class="tab-button active" data-tab="voiceToSignPanel">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                    <line x1="12" y1="19" x2="12" y2="23"></line>
-                    <line x1="8" y1="23" x2="16" y2="23"></line>
-                </svg>
-                Voice → Sign
-            </button>
-            <button class="tab-button" data-tab="signToVoicePanel">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                </svg>
-                Sign → Voice
-            </button>
+        <!-- Getting Started Section -->
+        <div class="section-header">
+            <div class="section-icon">🚀</div>
+            <h2 class="section-title">Getting Started</h2>
         </div>
-
-        <!-- Voice → Sign Panel -->
-        <div id="voiceToSignPanel" class="tab-content active">
-            <div class="feature-panel">
-                <h3>Voice → Sign: Speech to Signs</h3>
-                <p class="text-muted mb-4">Speak into your microphone and see the corresponding sign language
-                    alphabet.</p>
-
-                <!-- Browser Compatibility Warning -->
-                <div id="browserWarning" class="alert alert-warning hidden">
-                    Speech recognition not supported in this browser. Please use Chrome or Edge.
-                </div>
-
-                <!-- Microphone UI -->
-                <div class="microphone-section">
-                    <div id="microphoneButton" class="microphone-button">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                            <line x1="12" y1="19" x2="12" y2="23"></line>
-                            <line x1="8" y1="23" x2="16" y2="23"></line>
-                        </svg>
-                    </div>
-
-                    <!-- Listening Indicator -->
-                    <div id="listeningIndicator" class="listening-indicator hidden">
-                        <span>Listening</span>
-                        <div class="dots">
-                            <span>.</span><span>.</span><span>.</span>
-                        </div>
-                    </div>
-
-                    <!-- Control Buttons -->
-                    <div class="voice-controls">
-                        <button type="button" id="startListeningBtn" class="btn-generate">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <polygon points="10 8 16 12 10 16 10 8"></polygon>
-                            </svg>
-                            <span>Start Listening</span>
-                        </button>
-                        <button type="button" id="stopListeningBtn" class="btn-outline hidden">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <rect x="9" y="9" width="6" height="6"></rect>
-                            </svg>
-                            <span>Stop Listening</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Transcript Display -->
-                <div id="transcriptSection" class="transcript-section hidden">
-                    <label>Recognized Text:</label>
-                    <div id="transcriptDisplay" class="transcript-display"></div>
-                </div>
-
-                <!-- Error Message (Voice-specific) -->
-                <div id="voiceErrorMessage" class="alert alert-danger mt-4 hidden"></div>
-
-                <!-- Sign Output Container -->
-                <div id="voiceSignOutput" class="sign-output-container hidden"></div>
+        <div class="converter-cards">
+            <div class="converter-card">
+                <div class="converter-icon">📷</div>
+                <h3>Sign → Text</h3>
+                <p>Enable your camera and show hand signs. The AI recognizes them in real-time and converts to text.</p>
+            </div>
+            <div class="converter-card">
+                <div class="converter-icon">✍️</div>
+                <h3>Text → Sign</h3>
+                <p>Type or paste any text. The system generates corresponding ASL/ISL hand-sign images instantly.</p>
+            </div>
+            <div class="converter-card">
+                <div class="converter-icon">🎤</div>
+                <h3>Voice → Sign</h3>
+                <p>Speak into your microphone. Your speech is transcribed and converted to sign language visually.</p>
+            </div>
+            <div class="converter-card">
+                <div class="converter-icon">🔊</div>
+                <h3>Sign → Voice</h3>
+                <p>Show signs on camera. The system recognizes them and reads them aloud using text-to-speech.</p>
             </div>
         </div>
 
-        <!-- Sign → Voice Panel (NEW FEATURE) -->
-        <div id="signToVoicePanel" class="tab-content">
-            <div class="feature-panel">
-                <h3>Sign → Voice: Signs to Speech</h3>
-                <p class="text-muted mb-4">Use your camera to show signs, and the system will speak the recognized
-                    text.</p>
+        <!-- Tips & Tricks Section -->
+        <div class="section-header">
+            <div class="section-icon">💡</div>
+            <h2 class="section-title">Tips & Tricks</h2>
+        </div>
+        <div class="tips-grid">
+            <div class="tip-card">
+                <div class="tip-icon">☀️</div>
+                <h3 class="tip-title">Good Lighting</h3>
+                <p class="tip-text">Ensure your camera area has bright, even lighting for best recognition accuracy.</p>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">✋</div>
+                <h3 class="tip-title">Hand Position</h3>
+                <p class="tip-text">Keep your hand clearly visible within the camera frame, palm facing the camera.</p>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">📐</div>
+                <h3 class="tip-title">Clear Space</h3>
+                <p class="tip-text">Minimize background clutter. A neutral background helps the AI focus on your signs.</p>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">⏱️</div>
+                <h3 class="tip-title">Steady Pace</h3>
+                <p class="tip-text">Move at a consistent pace. Sudden jerky movements may reduce recognition accuracy.</p>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">🎧</div>
+                <h3 class="tip-title">Use Headphones</h3>
+                <p class="tip-text">For voice input, wear headphones to avoid background noise interference.</p>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">🌐</div>
+                <h3 class="tip-title">Multiple Languages</h3>
+                <p class="tip-text">Switch between ASL and ISL in Text → Sign for different sign language variants.</p>
+            </div>
+        </div>
 
-                <div class="controls mb-3">
-                    <button id="startCameraButtonVoice" class="btn-primary">Start Camera</button>
-                    <button id="closeCameraButtonVoice" class="btn-danger-custom hidden">Stop Camera</button>
-                </div>
-
-                <!-- Camera Feed Container -->
-                <div id="cameraFeedContainerVoice" class="camera-feed-box hidden">
-                    <img id="cameraFeedVoice" src="" alt="Camera Stream">
-                </div>
-
-                <!-- Prediction Display & Speech Controls -->
-                <div id="predictionSection" class="transcript-section mt-4 hidden">
-                    <label>Detected Sign:</label>
-                    <div id="predictionDisplay" class="transcript-display"></div>
-
-                    <div class="voice-controls mt-3">
-                        <button id="speakPredictionBtn" class="btn-generate">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                            </svg>
-                            <span>Speak</span>
-                        </button>
-
-                        <!-- Advanced Speech Controls (Optional) -->
-                        <button id="toggleSpeechControlsBtn" class="btn-outline">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <circle cx="12" cy="12" r="3"></circle>
-                                <path
-                                    d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24">
-                                </path>
-                            </svg>
-                            <span>Voice Settings</span>
-                        </button>
+        <!-- FAQ Section -->
+        <div class="section-header">
+            <div class="section-icon">❓</div>
+            <h2 class="section-title">FAQ</h2>
+        </div>
+        <div class="faq-container">
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaqAnswer(this)">
+                    <div class="faq-toggle">
+                        <i data-lucide="chevron-down" style="width:18px;height:18px;"></i>
                     </div>
-
-                    <!-- Optional Advanced Controls -->
-                    <div id="advancedSpeechControls" class="mt-3 hidden">
-                        <div class="row">
-                            <div class="col-md-6 mb-2">
-                                <label for="speechRate" class="form-label">Speed: <span
-                                        id="rateValue">1.0</span>x</label>
-                                <input type="range" id="speechRate" class="form-range" min="0.5" max="2" step="0.1"
-                                    value="1.0">
-                            </div>
-                            <div class="col-md-6 mb-2">
-                                <label for="speechPitch" class="form-label">Pitch: <span
-                                        id="pitchValue">1.0</span></label>
-                                <input type="range" id="speechPitch" class="form-range" min="0.5" max="2" step="0.1"
-                                    value="1.0">
-                            </div>
-                        </div>
-                    </div>
+                    <span>Do I need to give camera permissions?</span>
                 </div>
-
-                <!-- Real-time Prediction Display -->
-                <div id="predictionTextSection" class="mt-4 hidden">
-                    <label><strong>Detected Signs:</strong></label>
-                    <div id="predictionOutput" class="prediction-text-display"></div>
-                    <div class="d-flex gap-2 mt-2">
-                        <button id="clearPredictionsBtn" class="btn-outline">Clear Text</button>
-                        <button id="speakAllBtn" class="btn-generate">Speak All</button>
-                    </div>
+                <div class="faq-answer">
+                    Yes, for Sign → Text and Sign → Voice, your browser will ask for camera permission on first use. This is processed locally and never stored on our servers. You have full control over permissions.
                 </div>
+            </div>
 
-                <div class="info-box mt-4">
-                    <p class="mb-0"><strong>Tip:</strong> The system will detect signs and store the most recent
-                        prediction. Click "Speak" to hear it pronounced.</p>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaqAnswer(this)">
+                    <div class="faq-toggle">
+                        <i data-lucide="chevron-down" style="width:18px;height:18px;"></i>
+                    </div>
+                    <span>Is my data private?</span>
+                </div>
+                <div class="faq-answer">
+                    Yes, all data is processed in real-time on your device. We do not store or transmit your camera footage or audio outside your browser unless you explicitly share it. Your privacy is our priority.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaqAnswer(this)">
+                    <div class="faq-toggle">
+                        <i data-lucide="chevron-down" style="width:18px;height:18px;"></i>
+                    </div>
+                    <span>What languages are supported?</span>
+                </div>
+                <div class="faq-answer">
+                    Currently, we support American Sign Language (ASL) and Indian Sign Language (ISL) for primary conversions. Voice recognition supports multiple spoken languages depending on your browser locale.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaqAnswer(this)">
+                    <div class="faq-toggle">
+                        <i data-lucide="chevron-down" style="width:18px;height:18px;"></i>
+                    </div>
+                    <span>Does it work on mobile devices?</span>
+                </div>
+                <div class="faq-answer">
+                    Yes! All converters work on mobile devices. However, for best results with camera features, use a device with a good camera and stable internet connection.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaqAnswer(this)">
+                    <div class="faq-toggle">
+                        <i data-lucide="chevron-down" style="width:18px;height:18px;"></i>
+                    </div>
+                    <span>How accurate is the recognition?</span>
+                </div>
+                <div class="faq-answer">
+                    Our AI model achieves ~90%+ accuracy for clear sign recognition. Accuracy improves with good lighting, clear hand visibility, and steady hand movements. The system learns from usage patterns.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaqAnswer(this)">
+                    <div class="faq-toggle">
+                        <i data-lucide="chevron-down" style="width:18px;height:18px;"></i>
+                    </div>
+                    <span>Found a bug? How do I report it?</span>
+                </div>
+                <div class="faq-answer">
+                    Found an issue? Please reach out to our team using the contact information below. We appreciate your feedback and will address bugs as soon as possible!
                 </div>
             </div>
         </div>
 
+        <!-- Contact Section -->
+        <div class="section-header">
+            <div class="section-icon">📧</div>
+            <h2 class="section-title">Get In Touch</h2>
+        </div>
+        <div class="contact-grid">
+            <div class="contact-card">
+                <div class="contact-card-content">
+                    <div class="contact-avatar avatar-green">SV</div>
+                    <h3 class="contact-name">Sarvesh Veshi</h3>
+                    <p class="contact-role">Backend Developer</p>
+                    <a href="mailto:veshisarvesh23@gmail.com" class="contact-email">
+                        <i data-lucide="mail" style="width:16px;height:16px;"></i>
+                        Email
+                    </a>
+                </div>
+            </div>
+
+            <div class="contact-card">
+                <div class="contact-card-content">
+                    <div class="contact-avatar avatar-pink">JG</div>
+                    <h3 class="contact-name">Janhavi Godase</h3>
+                    <p class="contact-role">Systems Analysis</p>
+                    <a href="mailto:janhavi.godase07@gmail.com" class="contact-email">
+                        <i data-lucide="mail" style="width:16px;height:16px;"></i>
+                        Email
+                    </a>
+                </div>
+            </div>
+
+            <div class="contact-card">
+                <div class="contact-card-content">
+                    <div class="contact-avatar avatar-orange">VK</div>
+                    <h3 class="contact-name">Vedant Kondvilkar</h3>
+                    <p class="contact-role">Frontend Developer</p>
+                    <a href="mailto:kondvilkarvedant@gmail.com" class="contact-email">
+                        <i data-lucide="mail" style="width:16px;height:16px;"></i>
+                        Email
+                    </a>
+                </div>
+            </div>
+
+            <div class="contact-card">
+                <div class="contact-card-content">
+                    <div class="contact-avatar avatar-cyan">AG</div>
+                    <h3 class="contact-name">Atharv Ghadigaonkar</h3>
+                    <p class="contact-role">UI Research</p>
+                    <a href="mailto:atharv.ghadigaonkar287@gmail.com" class="contact-email">
+                        <i data-lucide="mail" style="width:16px;height:16px;"></i>
+                        Email
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Learning Resources Section -->
+        <div class="section-header">
+            <div class="section-icon">📚</div>
+            <h2 class="section-title">Learning Resources</h2>
+        </div>
+        <div class="resources-grid">
+            <a href="#" class="resource-card">
+                <div class="resource-icon">🔤</div>
+                <h3 class="resource-title">ASL Alphabet Guide</h3>
+                <p class="resource-desc">Learn the American Sign Language alphabet with videos and images.</p>
+            </a>
+            <a href="#" class="resource-card">
+                <div class="resource-icon">🤝</div>
+                <h3 class="resource-title">ISL Basics</h3>
+                <p class="resource-desc">Introduction to Indian Sign Language fundamentals.</p>
+            </a>
+            <a href="#" class="resource-card">
+                <div class="resource-icon">💬</div>
+                <h3 class="resource-title">Common Phrases</h3>
+                <p class="resource-desc">Quick reference of frequently used sign phrases.</p>
+            </a>
+            <a href="#" class="resource-card">
+                <div class="resource-icon">🎥</div>
+                <h3 class="resource-title">Video Tutorials</h3>
+                <p class="resource-desc">Step-by-step video guides for each converter.</p>
+            </a>
+        </div>
     </div>
 </main>
-
-<!-- Socket.IO Client -->
-<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='camera-controller.js') }}"></script>
-<script src="{{ url_for('static', filename='feature-utils.js') }}"></script>
-<script src="{{ url_for('static', filename='realtime-interaction.js') }}"></script>
-<script src="{{ url_for('static', filename='voice-sign.js') }}"></script>
-<!-- Note: sign-voice.js removed as it might be redundant or integrated into realtime-interaction.js logic? 
-     Wait, sign-voice.js from original file seemed to handle speech synthesis controller. 
-     I should verify if I covered everything in realtime-interaction.js or if I need sign-voice.js still.
-     The user audit said "Extract shared logic". 
-     Let's keep sign-voice.js if it contains unique logic not yet migrated, OR since I implemented initWebSocket and speakText, 
-     I might have covered the core parts. 
-     However, voice-sign.js handles the Microphone logic (Voice -> Sign). I did not touch that in realtime-interaction.js. 
-     So voice-sign.js MUST stay. 
-     sign-voice.js handles the Text-to-Speech controller logic.
-     My realtime-interaction.js has speakText(). 
-     Let's replicate the main glue code here to bind everything together. -->
-
 <script>
-    // Glue code to initialize modules
-    let cameraControllerVoice = null;
-
-    document.addEventListener('DOMContentLoaded', function () {
-        // Setup feature toggle
-        setupFeatureToggle('.tab-button', '.tab-content', {
-            onSwitch: (targetPanel) => {
-                // Stop cameras when switching panels
-                if (targetPanel === 'voiceToSignPanel') {
-                    if (cameraControllerVoice) {
-                        cameraControllerVoice.stopCamera();
-                        disconnectWebSocket(); // Stop WS when leaving Sign->Voice
-                    }
-                }
-            }
-        });
-
-        // Initialize Sign → Voice (Camera + WebSocket)
-        initSignToVoice();
-    });
-
-    function initSignToVoice() {
-        // Initialize camera
-        cameraControllerVoice = initCameraController({
-            startButtonId: 'startCameraButtonVoice',
-            stopButtonId: 'closeCameraButtonVoice',
-            feedElementId: 'cameraFeedVoice',
-            containerId: 'cameraFeedContainerVoice',
-            videoFeedUrl: "{{ url_for('video_feed') }}",
-            onPrediction: null // We use WebSocket for predictions
-        });
-
-        // Toggle Speech Controls
-        const toggleBtn = document.getElementById('toggleSpeechControlsBtn');
-        const advancedControls = document.getElementById('advancedSpeechControls');
-        if (toggleBtn && advancedControls) {
-            toggleBtn.addEventListener('click', () => advancedControls.classList.toggle('hidden'));
-        }
-
-        // Live Rate/Pitch value updates
-        ['speechRate', 'speechPitch'].forEach(id => {
-            const input = document.getElementById(id);
-            const display = document.getElementById(id === 'speechRate' ? 'rateValue' : 'pitchValue');
-            if (input && display) {
-                input.addEventListener('input', (e) => display.textContent = e.target.value);
-            }
-        });
-
-        // Camera Start/Stop hooks for WebSocket
-        const startBtn = document.getElementById('startCameraButtonVoice');
-        const stopBtn = document.getElementById('closeCameraButtonVoice');
-
-        if (startBtn) {
-            startBtn.addEventListener('click', () => {
-                console.log('Starting WebSocket...');
-                initWebSocket({
-                    onPrediction: (char) => {
-                        const display = document.getElementById('predictionDisplay');
-                        if (display) {
-                            display.textContent = char;
-                            document.getElementById('predictionSection').classList.remove('hidden');
-                        }
-                    },
-                    onStablePrediction: (char, fullText) => {
-                        const output = document.getElementById('predictionOutput');
-                        if (output) {
-                            output.textContent = fullText;
-                            document.getElementById('predictionTextSection').classList.remove('hidden');
-                        }
-                    }
-                });
-            });
-        }
-
-        if (stopBtn) {
-            stopBtn.addEventListener('click', () => {
-                disconnectWebSocket();
-            });
-        }
-
-        // Speak Button
-        document.getElementById('speakPredictionBtn')?.addEventListener('click', () => {
-            const text = document.getElementById('predictionDisplay')?.textContent;
-            if (text) speakText(text);
-        });
-
-        // Speak All Button
-        document.getElementById('speakAllBtn')?.addEventListener('click', () => {
-            const text = document.getElementById('predictionOutput')?.textContent;
-            if (text) speakText(text);
-        });
-
-        // Clear Button
-        document.getElementById('clearPredictionsBtn')?.addEventListener('click', () => {
-            clearAccumulatedText(); // from realtime-interaction.js
-            const output = document.getElementById('predictionOutput');
-            if (output) output.textContent = '';
-        });
+    // FAQ Accordion Toggle
+    function toggleFaqAnswer(element) {
+        const answer = element.nextElementSibling;
+        const toggle = element.querySelector('.faq-toggle');
+        
+        answer.classList.toggle('active');
+        toggle.classList.toggle('active');
     }
+
+    // Initialize lucide icons
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
 </script>
 {% endblock %}

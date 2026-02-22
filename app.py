@@ -35,12 +35,16 @@ from flask_mail import Message, Mail
 import random
 import re
 import pickle
-import cv2
-import mediapipe as mp
-import numpy as np
-from services.sign_service import sign_service
 from flask_socketio import SocketIO, emit
 import threading
+import time
+import socket
+import select
+
+def dlog(msg):
+    with open("diagnostic_debug.log", "a") as f:
+        f.write(msg + "\n")
+        f.flush()
 
 app = Flask(__name__)
 
@@ -395,78 +399,39 @@ def update_password():
 # -----------------------------  end  ---------------------------
 
 
-# --------------------------- Machine Learning ------------------
-# --------------------------- Machine Learning ------------------
-try:
-    model_dict = pickle.load(open('./models/model.p', 'rb'))
-    model = model_dict['model']
-except Exception as e:
-    print("Error loading the model:", e)
-    model = None
+# --------------------------- Machine Learning# -------------------Background UDP Listeners-------------------
+latest_frame_jpeg = None
+frame_lock = threading.Lock()
 
-# -------------------Camera Helper Functions-------------------
-def get_camera():
-    """Get or create shared camera instance with thread-safe locking."""
-    global camera
-    with camera_lock:
-        if camera is None or not camera.isOpened():
-            camera = cv2.VideoCapture(0)
-            if not camera.isOpened():
-                sys.stderr.write("ERROR: Failed to open camera\n")
-                return None
-        return camera
+def udp_video_listener():
+    """Listens for JPEG frames from the standalone camera engine process."""
+    global latest_frame_jpeg
+    dlog("DIAGNOSTIC: UDP Video Listener Starting on 5555")
+    
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind(('127.0.0.1', 5555))
+    sock.settimeout(1.0)
+    
+    while True:
+        try:
+            data, _ = sock.recvfrom(65507)
+            if data:
+                dlog(f"DIAGNOSTIC: Received UDP Packet, length={len(data)}")
+                with frame_lock:
+                    latest_frame_jpeg = data
+        except socket.timeout:
+            continue
+        except Exception as e:
+            dlog(f"UDP VIDEO ERROR: {e}")
+            time.sleep(1)
 
-def release_camera():
-    """Release camera resource safely."""
-    global camera, camera_active
-    with camera_lock:
-        if camera is not None:
-            camera.release()
-            camera = None
-        camera_active = False
-    sys.stderr.write("DEBUG: Camera released\n")
-
-# -------------------WebSocket Event Handlers-------------------
-@socketio.on('disconnect')
-def handle_disconnect():
-    """Clean up camera when WebSocket disconnects. Wrapped for crash resilience."""
-    try:
-        sys.stderr.write("DEBUG: WebSocket disconnected, releasing camera\n")
-        release_camera()
-    except Exception as e:
-        sys.stderr.write(f"DEBUG: Disconnect handler error (non-fatal): {e}\n")
-
-# -------------------Video Frame Generation-------------------
-# ✅ FIX: Removed @app.route decorator — this function is only called
-# internally by video_feed() as a generator, not as a direct HTTP endpoint.
-def generate_frames():
-    """Generate video frames with MediaPipe hand detection and ML predictions."""
-    global camera_active
+def udp_prediction_listener():
+    """Listens for predictions from standalone camera engine process."""
+    dlog("DIAGNOSTIC: UDP Prediction Listener Starting on 5556")
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind(('127.0.0.1', 5556))
+    sock.settimeout(1.0)
     
-    sys.stderr.write("DEBUG: generate_frames called\n")
-    
-    # Prevent multiple concurrent streams
-    if camera_active:
-        sys.stderr.write("WARNING: Camera already active\n")
-        return Response("Camera already in use", status=409)
-    
-    camera_active = True
-    
-    # Get shared camera instance
-    cap = get_camera()
-    if cap is None:
-        camera_active = False
-        return Response("Camera unavailable", status=503)
-    
-    # Initialize MediaPipe
-    mp_hands = mp.solutions.hands
-    mp_drawing = mp.solutions.drawing_utils
-    mp_drawing_styles = mp.solutions.drawing_styles
-    hands = mp_hands.Hands(static_image_mode=True, min_detection_confidence=0.3)
-    
-    # ✅ FIX: Labels dict keyed by STRING class labels to match model output.
-    # The Random Forest model's .predict() returns string class labels
-    # like '0', '1', '2', etc. — NOT integers.
     labels_dict = {
         '0': 'A', '1': 'B', '2': 'C', '3': 'D', '4': 'E', '5': 'F', '6': 'G', '7': 'H', '8': 'I', 
         '9': 'J', '10': 'K', '11': 'L', '12': 'M', '13': 'N', '14': 'O', '15': 'P', '16': 'Q', 
@@ -475,122 +440,71 @@ def generate_frames():
         '30': 'Sorry', '31': 'Please', '32': 'You are welcome.'
     }
     
-    # Prediction stability tracking
     last_prediction = None
     stable_count = 0
-    STABILITY_THRESHOLD = 15  # ~0.5 seconds at 30 FPS
+    STABILITY_THRESHOLD = 5
     
-    try:
-        while True:
-            data_aux = []
-            x_ = []
-            y_ = []
-            
-            ret, frame = cap.read()
-            if not ret:
-                sys.stderr.write("DEBUG: Failed to read frame\n")
-                break
-            
-            H, W, _ = frame.shape
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            
-            try:
-                results = hands.process(frame_rgb)
-            except Exception as e:
-                sys.stderr.write(f"DEBUG: MediaPipe error: {e}\n")
-                continue
-            
-            if results.multi_hand_landmarks:
-                for hand_landmarks in results.multi_hand_landmarks:
-                    # Draw hand landmarks on frame
-                    mp_drawing.draw_landmarks(
-                        frame,
-                        hand_landmarks,
-                        mp_hands.HAND_CONNECTIONS,
-                        mp_drawing_styles.get_default_hand_landmarks_style(),
-                        mp_drawing_styles.get_default_hand_connections_style()
-                    )
+    while True:
+        try:
+            data, _ = sock.recvfrom(1024)
+            if data:
+                predicted_label = data.decode('utf-8')
+                dlog(f"DIAGNOSTIC: Received prediction: {predicted_label}")
+                predicted_character = labels_dict.get(predicted_label, predicted_label)
                 
-                # Extract features for prediction
-                data_aux = []
-                x_ = []
-                y_ = []
+                # Emit to socketio
+                socketio.emit('prediction', {
+                    'character': predicted_character,
+                    'timestamp': datetime.now().isoformat()
+                }, namespace='/')
                 
-                for i in range(len(hand_landmarks.landmark)):
-                    x = hand_landmarks.landmark[i].x
-                    y = hand_landmarks.landmark[i].y
-                    x_.append(x)
-                    y_.append(y)
+                if predicted_character == last_prediction:
+                    stable_count += 1
+                else:
+                    stable_count = 0
+                    last_prediction = predicted_character
                 
-                for i in range(len(hand_landmarks.landmark)):
-                    x = hand_landmarks.landmark[i].x
-                    y = hand_landmarks.landmark[i].y
-                    data_aux.append(x - min(x_))
-                    data_aux.append(y - min(y_))
-                
-                # Bounding box coordinates
-                x1 = int(min(x_) * W) - 10
-                y1 = int(min(y_) * H) - 10
-                x2 = int(max(x_) * W) - 10
-                y2 = int(max(y_) * H) - 10
-                
-                try:
-                    # Make prediction
-                    # Ensure input shape matches training (1, 42)
-                    input_data = np.asarray(data_aux).reshape(1, -1)
-                    prediction = model.predict(input_data)
-                    
-                    # DEBUG: Print raw prediction details
-                    # sys.stderr.write(f"DEBUG: Raw Prediction: {prediction}\n")
-
-                    # ✅ FIX: Handle both string labels and integer indices
-                    predicted_label = prediction[0]
-                    if isinstance(predicted_label, (int, np.integer)):
-                        predicted_character = labels_dict.get(str(predicted_label), '?')
-                    else:
-                        predicted_character = labels_dict.get(str(predicted_label), str(predicted_label))
-                    
-                    # EMIT PREDICTION VIA WEBSOCKET (for debugging/visualization)
-                    socketio.emit('prediction', {
+                if stable_count == STABILITY_THRESHOLD:
+                    socketio.emit('stable_prediction', {
                         'character': predicted_character,
                         'timestamp': datetime.now().isoformat()
                     }, namespace='/')
-                    
-                    # STABILITY TRACKING
-                    if predicted_character == last_prediction:
-                        stable_count += 1
-                    else:
-                        stable_count = 0
-                        last_prediction = predicted_character
-                    
-                    # EMIT STABLE PREDICTION ONLY (for text accumulation and speech)
-                    if stable_count == STABILITY_THRESHOLD:
-                        sys.stderr.write(f"DEBUG: STABLE PREDICTION: {predicted_character}\n")
-                        socketio.emit('stable_prediction', {
-                            'character': predicted_character,
-                            'timestamp': datetime.now().isoformat()
-                        }, namespace='/')
-                        stable_count = 0  # Reset to allow repeated characters with pause
-                    
-                    # Draw on frame (existing MJPEG overlay)
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 0), 4)
-                    cv2.putText(frame, predicted_character, (x1, y1 - 10),
-                               cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 0, 0), 3, cv2.LINE_AA)
-                    
-                    # sys.stderr.write(f"PREDICT: {predicted_character} (stable={stable_count}/{STABILITY_THRESHOLD})\n")
+                    stable_count = 0 
                 
-                except Exception as e:
-                    # ✅ FIX: Log prediction errors instead of silently swallowing them
-                    sys.stderr.write(f"PREDICTION ERROR: {e}\n")
-            
-            # Encode frame for MJPEG stream
-            ret, buffer = cv2.imencode('.jpg', frame)
-            frame = buffer.tobytes()
-            yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+        except socket.timeout:
+            continue
+        except Exception as e:
+            time.sleep(1)
+
+# Start listeners automatically
+vid_thread = threading.Thread(target=udp_video_listener, daemon=True)
+vid_thread.start()
+
+pred_thread = threading.Thread(target=udp_prediction_listener, daemon=True)
+pred_thread.start()
+
+# -------------------WebSocket Event Handlers-------------------
+@socketio.on('disconnect')
+def handle_disconnect():
+    pass
+
+# -------------------Video Frame Generation-------------------
+def generate_frames():
+    """Yield MJPEG frames from the background UDP buffer."""
+    global latest_frame_jpeg
     
-    finally:
-        sys.stderr.write("DEBUG: Stream ended, releasing camera\n")
-        release_camera()
+    # Wait for the first frame
+    timeout = 100
+    while latest_frame_jpeg is None and timeout > 0:
+        time.sleep(0.05)
+        timeout -= 1
+        
+    while True:
+        with frame_lock:
+            frame_bytes = latest_frame_jpeg
+        if frame_bytes is not None:
+            yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+        time.sleep(0.033)
 
 @app.route('/video_feed')
 def video_feed():

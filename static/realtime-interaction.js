@@ -12,71 +12,65 @@ let isAutoSpeakEnabled = true;
  * Initializes WebSocket connection.
  * @param {object} callbacks - { onPrediction: fn, onStablePrediction: fn, onError: fn }
  */
+let pollInterval = null;
+
 function initWebSocket(callbacks = {}) {
-    if (socket && socket.connected) {
-        console.log('WebSocket already connected');
-        return;
+    console.log('🔄 Initializing Prediction Poller (Browser Bridge Mode)');
+    
+    if (pollInterval) {
+        clearInterval(pollInterval);
     }
 
-    // Ensure Socket.IO is loaded
-    if (typeof io === 'undefined') {
-        console.error('Socket.IO client not loaded');
-        return;
-    }
+    let lastChar = "";
+    let charCount = 0;
+    const STABILITY_THRESHOLD = 5; // signs needed to consider "stable"
 
-    socket = io({
-        transports: ['websocket', 'polling'],
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionAttempts: 5
-    });
+    pollInterval = setInterval(async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:5001/prediction');
+            const data = await response.json();
+            const char = data.prediction;
 
-    socket.on('connect', () => {
-        console.log('✅ WebSocket connected');
-    });
+            if (callbacks.onPrediction) {
+                callbacks.onPrediction(char);
+            }
 
-    socket.on('disconnect', () => {
-        console.log('❌ WebSocket disconnected');
-    });
+            // Stability check for auto-accumulation
+            if (char !== "None" && char !== "Hand Detected") {
+                if (char === lastChar) {
+                    charCount++;
+                } else {
+                    lastChar = char;
+                    charCount = 1;
+                }
 
-    // Live Unstable prediction
-    socket.on('prediction', (data) => {
-        if (callbacks.onPrediction) {
-            callbacks.onPrediction(data.character);
+                if (charCount === STABILITY_THRESHOLD) {
+                    console.log('✅ Stable prediction detected:', char);
+                    accumulatedText += char + " ";
+                    if (callbacks.onStablePrediction) {
+                        callbacks.onStablePrediction(char, accumulatedText);
+                    }
+                    if (isAutoSpeakEnabled && window.speechSynthesis) {
+                        speakText(char);
+                    }
+                    charCount = 0; // Reset after accumulation
+                }
+            } else {
+                charCount = 0;
+            }
+
+        } catch (error) {
+            // console.error('Poller error:', error);
+            if (callbacks.onError) callbacks.onError(error);
         }
-    });
-
-    // Stable prediction (for accumulation)
-    socket.on('stable_prediction', (data) => {
-        console.log('✅ Stable prediction:', data.character);
-
-        accumulatedText += data.character + " ";
-
-        if (callbacks.onStablePrediction) {
-            callbacks.onStablePrediction(data.character, accumulatedText);
-        }
-
-        // Auto-speak logic
-        if (isAutoSpeakEnabled && window.speechSynthesis) {
-            speakText(data.character);
-        }
-    });
-
-    socket.on('error', (error) => {
-        console.error('WebSocket error:', error);
-        if (callbacks.onError) callbacks.onError(error);
-    });
-
-    socket.on('connect_error', (error) => {
-        console.error('WebSocket connection error:', error);
-        if (callbacks.onError) callbacks.onError(error);
-    });
+    }, 200); // 5Hz polling
 }
 
 function disconnectWebSocket() {
-    if (socket && socket.connected) {
-        socket.disconnect();
-        console.log('WebSocket manually disconnected');
+    if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+        console.log('Poller stopped');
     }
 }
 

@@ -36,6 +36,38 @@
         browserWarning = document.getElementById('browserWarning');
         voiceErrorMessage = document.getElementById('voiceErrorMessage');
         voiceSignOutput = document.getElementById('voiceSignOutput');
+
+        // New button elements
+        const startSpeechBtn = document.getElementById('startSpeechBtn');
+        const stopSpeechBtn = document.getElementById('stopSpeechBtn');
+        const clearVoiceSignTextBtn = document.getElementById('clearVoiceSignTextBtn');
+        const refinedTextBox = document.getElementById('refinedTextBox');
+
+        // Add event listeners for new buttons
+        if (startSpeechBtn) {
+            startSpeechBtn.addEventListener('click', function () {
+                synthesizeSpeech(refinedTextBox.value || transcriptDisplay.textContent);
+            });
+        }
+
+        if (stopSpeechBtn) {
+            stopSpeechBtn.addEventListener('click', function () {
+                window.speechSynthesis.cancel();
+                if (startSpeechBtn) startSpeechBtn.style.display = 'inline-flex';
+                stopSpeechBtn.style.display = 'none';
+            });
+        }
+
+        if (clearVoiceSignTextBtn) {
+            clearVoiceSignTextBtn.addEventListener('click', function () {
+                if (refinedTextBox) refinedTextBox.value = '';
+                if (transcriptDisplay) transcriptDisplay.textContent = '';
+                if (voiceSignOutput) {
+                    voiceSignOutput.innerHTML = '';
+                    voiceSignOutput.classList.add('hidden');
+                }
+            });
+        }
     }
 
     function setupTabSwitching() {
@@ -244,6 +276,45 @@
         setTimeout(function () {
             voiceErrorMessage.classList.add('hidden');
         }, 5000);
+    }
+
+    function synthesizeSpeech(text) {
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
+
+        if (!text || text.trim() === '') {
+            showError('No text to speak. Please provide some text first.');
+            return;
+        }
+
+        // Create utterance
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+
+        // Update buttons
+        const startSpeechBtn = document.getElementById('startSpeechBtn');
+        const stopSpeechBtn = document.getElementById('stopSpeechBtn');
+
+        utterance.onstart = function () {
+            if (startSpeechBtn) startSpeechBtn.style.display = 'none';
+            if (stopSpeechBtn) stopSpeechBtn.style.display = 'inline-flex';
+        };
+
+        utterance.onend = function () {
+            if (startSpeechBtn) startSpeechBtn.style.display = 'inline-flex';
+            if (stopSpeechBtn) stopSpeechBtn.style.display = 'none';
+        };
+
+        utterance.onerror = function (event) {
+            showError('Speech synthesis error: ' + event.error);
+            if (startSpeechBtn) startSpeechBtn.style.display = 'inline-flex';
+            if (stopSpeechBtn) stopSpeechBtn.style.display = 'none';
+        };
+
+        // Start speech synthesis
+        window.speechSynthesis.speak(utterance);
     }
 
 })();
